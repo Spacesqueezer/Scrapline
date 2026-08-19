@@ -51,7 +51,9 @@ func _on_weapon_fire(payload: Payload, start_pos: Vector2, target: Node2D):
 	print(">>> BANG! Weapon fired!")
 	print("Payload tags: ", payload.tags)
 	print("Payload damage: ", payload.base_damage)
+
 	if target:
-		print("Target hit for ", payload.base_damage)
-		target.take_damage(payload.base_damage, payload.tags)
-		print("Target HP remaining: ", target.hp)
+		# Создаем снаряд, который физически полетит к цели
+		var proj = Projectile.new()
+		add_child(proj)
+		proj.setup(start_pos, target, payload)

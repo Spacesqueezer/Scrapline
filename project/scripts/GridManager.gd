@@ -9,6 +9,14 @@ var grid: Dictionary = {}
 
 func _ready():
 	print("GridManager initialized. Size: ", grid_size)
+	queue_redraw()
+
+func _draw():
+	# Отрисовываем сетку для прототипа
+	for x in range(grid_size.x + 1):
+		draw_line(Vector2(x * cell_size, 0), Vector2(x * cell_size, grid_size.y * cell_size), Color(0.3, 0.3, 0.3, 0.5), 1.0)
+	for y in range(grid_size.y + 1):
+		draw_line(Vector2(0, y * cell_size), Vector2(grid_size.x * cell_size, y * cell_size), Color(0.3, 0.3, 0.3, 0.5), 1.0)
 
 ## Converts world position to grid coordinates
 func world_to_grid(pos: Vector2) -> Vector2i:

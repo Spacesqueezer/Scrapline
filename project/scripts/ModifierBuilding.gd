@@ -7,6 +7,10 @@ var current_payload: Payload = null
 var timer: float = 0.0
 var is_processing: bool = false
 
+func _ready():
+	base_color = Color(0.2, 0.2, 0.8) # Синий для модификатора
+	super()
+
 func receive_payload(payload: Payload):
 	if is_processing or current_payload != null:
 		# Jammed! Or handle overflow. For now, we drop or ignore.

@@ -10,8 +10,22 @@ signal on_payload_received(payload: Payload)
 # For outputting payload
 signal on_payload_output(payload: Payload, direction: Vector2i)
 
+var base_color: Color = Color(0.5, 0.5, 0.5)
+
 func _ready():
-	pass
+	queue_redraw()
+
+func _draw():
+	# Отрисовываем квадрат для здания (чуть меньше ячейки, например 56x56 при cell_size=64)
+	var rect_size = 56.0
+	var offset = -rect_size / 2.0
+	var rect = Rect2(offset, offset, rect_size, rect_size)
+	draw_rect(rect, base_color, true)
+
+	# Отрисовываем "носик" (выход), чтобы понимать направление
+	if facing_direction != Vector2i.ZERO:
+		var dir = Vector2(facing_direction)
+		draw_line(Vector2.ZERO, dir * (rect_size / 2.0), Color.YELLOW, 3.0)
 
 func setup(p_data: ModuleData, p_grid_pos: Vector2i):
 	data = p_data

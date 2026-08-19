@@ -10,6 +10,25 @@ var is_active: bool = false
 signal on_death(enemy: Enemy)
 signal on_reach_base(enemy: Enemy)
 
+func _ready():
+	queue_redraw()
+
+func _draw():
+	# Рисуем круг для врага
+	draw_circle(Vector2.ZERO, 20.0, Color.PURPLE)
+
+	# Рисуем полоску HP над врагом
+	if max_hp > 0:
+		var hp_ratio = clamp(hp / max_hp, 0.0, 1.0)
+		var bar_width = 40.0
+		var bar_height = 6.0
+		var offset_y = -30.0
+
+		# Фон (Красный)
+		draw_rect(Rect2(-bar_width / 2.0, offset_y, bar_width, bar_height), Color.RED)
+		# Текущее HP (Зеленый)
+		draw_rect(Rect2(-bar_width / 2.0, offset_y, bar_width * hp_ratio, bar_height), Color.GREEN)
+
 func setup(start_pos: Vector2, p_hp: float, p_speed: float, dir: Vector2):
 	global_position = start_pos
 	hp = p_hp
@@ -34,6 +53,8 @@ func take_damage(amount: float, tags: Array[String]):
 		return
 
 	hp -= amount
+	queue_redraw()
+
 	if hp <= 0:
 		die()
 

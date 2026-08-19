@@ -9,6 +9,13 @@ var direction: Vector2 = Vector2.ZERO
 
 signal on_hit(projectile: Projectile)
 
+func _ready():
+	queue_redraw()
+
+func _draw():
+	# Рисуем маленький оранжевый снаряд
+	draw_circle(Vector2.ZERO, 8.0, Color.ORANGE)
+
 func setup(start_pos: Vector2, p_target: Node2D, p_payload: Payload):
 	global_position = start_pos
 	target = p_target

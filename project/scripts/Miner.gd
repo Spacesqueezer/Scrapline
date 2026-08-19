@@ -6,7 +6,9 @@ var timer: float = 0.0
 var active: bool = false
 
 func _ready():
+	base_color = Color(0.2, 0.6, 0.2) # Зеленый для шахты
 	active = true
+	super()
 
 func _process(delta):
 	if not active:
