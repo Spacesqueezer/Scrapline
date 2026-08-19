@@ -18,7 +18,8 @@ func run_test():
 	# 2. Create a Modifier
 	var modifier = ModifierBuilding.new()
 	var mod_data = ModifierData.new()
-	mod_data.tags_to_add = ["Explosive", "Fire"]
+	var tags: Array[String] = ["Explosive", "Fire"]
+	mod_data.tags_to_add = tags
 	mod_data.stat_multipliers = {"damage": 2.0}
 	modifier.modifier_data = mod_data
 	modifier.facing_direction = Vector2i.RIGHT
