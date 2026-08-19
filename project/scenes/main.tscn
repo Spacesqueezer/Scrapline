@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3 uid="uid://b8y4g2v6qj3m"]
+
+[ext_resource type="Script" path="res://scripts/GameManager.gd" id="1_gm"]
+[ext_resource type="Script" path="res://scripts/GridManager.gd" id="2_grid"]
+
+[node name="Main" type="Node"]
+
+[node name="GameManager" type="Node" parent="."]
+script = ExtResource("1_gm")
+
+[node name="World2D" type="Node2D" parent="."]
+
+[node name="GridManager" type="Node2D" parent="World2D"]
+script = ExtResource("2_grid")
+
+[node name="UILayer" type="CanvasLayer" parent="."]
