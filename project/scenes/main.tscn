@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/GameManager.gd" id="1_gm"]
 [ext_resource type="Script" path="res://scripts/GridManager.gd" id="2_grid"]
+[ext_resource type="Script" path="res://scripts/MockTestScript.gd" id="3_test"]
 
 [node name="Main" type="Node"]
 
@@ -12,5 +13,8 @@ script = ExtResource("1_gm")
 
 [node name="GridManager" type="Node2D" parent="World2D"]
 script = ExtResource("2_grid")
+
+[node name="MockTest" type="Node" parent="."]
+script = ExtResource("3_test")
 
 [node name="UILayer" type="CanvasLayer" parent="."]

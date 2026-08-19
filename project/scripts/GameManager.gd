@@ -50,3 +50,10 @@ func damage_base(amount: int):
 	base_damaged.emit(amount, base_hp)
 	if base_hp <= 0:
 		change_state(GameState.GAME_OVER)
+
+func get_closest_enemy(pos: Vector2, max_range: float) -> Node2D:
+	if has_meta("mock_target"):
+		var target = get_meta("mock_target")
+		if target and target.is_active and target.global_position.distance_to(pos) <= max_range:
+			return target
+	return null
