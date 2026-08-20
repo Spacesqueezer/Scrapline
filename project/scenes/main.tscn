@@ -5,6 +5,7 @@
 [ext_resource type="Script" path="res://scripts/WaveManager.gd" id="3_wave"]
 [ext_resource type="Script" path="res://scripts/PoolManager.gd" id="4_pool"]
 [ext_resource type="PackedScene" uid="uid://d3x123abc456" path="res://scenes/build_menu.tscn" id="5_ui"]
+[ext_resource type="PackedScene" uid="uid://e4y234def567" path="res://scenes/game_over_menu.tscn" id="6_go"]
 
 [node name="Main" type="Node"]
 
@@ -22,8 +23,6 @@ script = ExtResource("4_pool")
 
 [node name="WaveManager" type="Node" parent="."]
 script = ExtResource("3_wave")
-
-[ext_resource type="PackedScene" uid="uid://e4y234def567" path="res://scenes/game_over_menu.tscn" id="6_go"]
 
 [node name="UILayer" type="CanvasLayer" parent="."]
 
