@@ -13,8 +13,15 @@ func _ready():
 	queue_redraw()
 
 func _draw():
-	# Рисуем маленький оранжевый снаряд
-	draw_circle(Vector2.ZERO, 8.0, Color.ORANGE)
+	var proj_color = Color.ORANGE
+	var proj_size = 8.0
+
+	if payload:
+		if "Fire" in payload.tags or "Explosive" in payload.tags:
+			proj_color = Color.RED
+			proj_size = 14.0 # Снаряд становится больше, если прошел через модификатор
+
+	draw_circle(Vector2.ZERO, proj_size, proj_color)
 
 func setup(start_pos: Vector2, p_target, p_payload: Payload):
 	global_position = start_pos
@@ -23,29 +30,37 @@ func setup(start_pos: Vector2, p_target, p_payload: Payload):
 	is_active = true
 	show()
 
+	# Снаряд летит строго по прямой к той точке, где был враг в момент выстрела.
 	if target and is_instance_valid(target):
 		direction = (target.global_position - global_position).normalized()
+	else:
+		direction = Vector2.RIGHT
+
+	queue_redraw()
 
 func _process(delta):
 	if not is_active:
 		return
 
-	# Homing or straight line. Let's do straight line towards last known direction for now.
-	if target and is_instance_valid(target) and target.is_active:
-		direction = (target.global_position - global_position).normalized()
-
+	# Движение строго по прямой
 	global_position += direction * speed * delta
 
-	# Hit detection (mock simple distance check)
-	if target and is_instance_valid(target) and target.is_active:
-		if global_position.distance_to(target.global_position) < 20.0:
-			hit(target)
-	else:
-		# Target died before bullet arrived
-		# In a real game, let it fly off screen, but for now we just deactivate after a while
-		# Need screen bounds check.
-		if global_position.x < -100 or global_position.x > 1000 or global_position.y < -100 or global_position.y > 1500:
-			deactivate()
+	# Универсальная проверка столкновений (со всеми активными врагами)
+	var wave_manager = get_node_or_null("/root/Main/WaveManager")
+	if wave_manager:
+		var hit_target = null
+		for enemy in wave_manager.active_enemies:
+			if enemy.is_active and global_position.distance_to(enemy.global_position) < 25.0:
+				hit_target = enemy
+				break
+
+		if hit_target:
+			hit(hit_target)
+			return
+
+	# Удаление при вылете за экран
+	if global_position.x < -100 or global_position.x > 1000 or global_position.y < -100 or global_position.y > 1500:
+		deactivate()
 
 func hit(hit_target):
 	if hit_target.has_method("take_damage"):
