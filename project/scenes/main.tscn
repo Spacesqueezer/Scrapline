@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://scripts/PoolManager.gd" id="4_pool"]
 [ext_resource type="PackedScene" uid="uid://d3x123abc456" path="res://scenes/build_menu.tscn" id="5_ui"]
 [ext_resource type="PackedScene" uid="uid://e4y234def567" path="res://scenes/game_over_menu.tscn" id="6_go"]
+[ext_resource type="PackedScene" uid="uid://reward123456789" path="res://scenes/reward_menu.tscn" id="7_reward"]
 
 [node name="Main" type="Node"]
 
@@ -29,3 +30,5 @@ script = ExtResource("3_wave")
 [node name="BuildMenu" parent="UILayer" instance=ExtResource("5_ui")]
 
 [node name="GameOverMenu" parent="UILayer" instance=ExtResource("6_go")]
+
+[node name="RewardMenu" parent="UILayer" instance=ExtResource("7_reward")]

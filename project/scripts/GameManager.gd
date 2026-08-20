@@ -20,6 +20,7 @@ signal base_damaged(amount: int, current_hp: int)
 @onready var wave_manager = $"../WaveManager"
 @onready var grid_manager = $"../World2D/GridManager"
 @onready var build_menu = $"../UILayer/BuildMenu"
+@onready var reward_menu = $"../UILayer/RewardMenu"
 
 func _ready():
 	print("GameManager initialized.")
@@ -38,6 +39,9 @@ func _ready():
 		wave_started.connect(func(w): build_menu.update_wave_label(w))
 		base_damaged.connect(func(amt, hp): build_menu.update_base_hp(hp))
 
+	if reward_menu:
+		reward_menu.on_reward_selected.connect(_on_reward_selected)
+
 	# Delay initial state to let UI load
 	call_deferred("change_state", GameState.BUILD)
 
@@ -48,6 +52,17 @@ func _on_ui_start_wave():
 func _on_ui_building_selected(b_type: String):
 	if current_state == GameState.BUILD and grid_manager:
 		grid_manager.set_selected_building(b_type)
+
+func _on_reward_selected(reward_id: String):
+	print("Player selected reward: ", reward_id)
+
+	if reward_id != "None" and build_menu:
+		build_menu.unlock_building(reward_id)
+
+	if reward_menu:
+		reward_menu.hide()
+
+	change_state(GameState.BUILD)
 
 func _on_ui_test_scenario():
 	if current_state != GameState.BUILD or not grid_manager:
@@ -101,8 +116,11 @@ func change_state(new_state: GameState):
 			print("Phase: REWARD")
 			if wave_manager:
 				wave_manager._force_test_wave = false
-			# For now, auto-skip reward back to build
-			call_deferred("change_state", GameState.BUILD)
+
+			if reward_menu:
+				reward_menu.generate_and_show_draft()
+			else:
+				call_deferred("change_state", GameState.BUILD)
 		GameState.GAME_OVER:
 			print("Phase: GAME OVER")
 			var game_over_menu = get_node_or_null("/root/Main/UILayer/GameOverMenu")
