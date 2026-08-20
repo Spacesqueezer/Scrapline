@@ -126,6 +126,11 @@ func remove_module(grid_pos: Vector2i):
 		grid.erase(grid_pos)
 		module.queue_free()
 
+func clear_grid():
+	var keys = grid.keys()
+	for key in keys:
+		remove_module(key)
+
 ## Gets the module at a specific position, returns null if empty
 func get_module_at(grid_pos: Vector2i) -> Node2D:
 	if grid.has(grid_pos):

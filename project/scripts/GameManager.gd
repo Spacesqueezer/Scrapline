@@ -28,6 +28,7 @@ func _ready():
 	if build_menu:
 		build_menu.on_start_wave_pressed.connect(_on_ui_start_wave)
 		build_menu.on_building_selected.connect(_on_ui_building_selected)
+		build_menu.on_test_scenario_pressed.connect(_on_ui_test_scenario)
 
 		# Connect to own signals to update UI
 		state_changed.connect(func(state):
@@ -48,6 +49,41 @@ func _on_ui_building_selected(b_type: String):
 	if current_state == GameState.BUILD and grid_manager:
 		grid_manager.set_selected_building(b_type)
 
+func _on_ui_test_scenario():
+	if current_state != GameState.BUILD or not grid_manager:
+		return
+
+	# Очищаем сетку
+	grid_manager.clear_grid()
+
+	# Ставим 1 очень медленный Miner (1 патрон в 3 секунды)
+	grid_manager.set_selected_building("Miner")
+	grid_manager.attempt_build(Vector2i(3, 8))
+	var slow_miner = grid_manager.get_module_at(Vector2i(3, 8))
+	if slow_miner and slow_miner is Miner:
+		slow_miner.produce_time = 3.0
+		slow_miner.facing_direction = Vector2i.UP
+
+	# Ставим пушку, которая хочет стрелять 10 раз в секунду
+	grid_manager.set_selected_building("Weapon")
+	grid_manager.attempt_build(Vector2i(3, 7))
+	var fast_weapon = grid_manager.get_module_at(Vector2i(3, 7))
+	if fast_weapon and fast_weapon is WeaponBuilding:
+		var fast_w_data = WeaponData.new()
+		fast_w_data.fire_rate = 10.0
+		fast_w_data.range = 500.0
+		fast_weapon.weapon_data = fast_w_data
+		fast_weapon.facing_direction = Vector2i.UP
+
+	# Заставляем WaveManager спавнить толпу Swarm
+	if wave_manager:
+		wave_manager._force_test_wave = true
+
+	# Снимаем выделение
+	grid_manager.set_selected_building("")
+
+	print("Test scenario setup complete. Slow Miner + Fast Weapon.")
+
 func change_state(new_state: GameState):
 	current_state = new_state
 	state_changed.emit(current_state)
@@ -63,6 +99,8 @@ func change_state(new_state: GameState):
 			start_wave()
 		GameState.REWARD:
 			print("Phase: REWARD")
+			if wave_manager:
+				wave_manager._force_test_wave = false
 			# For now, auto-skip reward back to build
 			call_deferred("change_state", GameState.BUILD)
 		GameState.GAME_OVER:

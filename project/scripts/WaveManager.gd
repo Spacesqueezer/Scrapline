@@ -14,11 +14,18 @@ var active_enemies: Array[Enemy] = []
 func _ready():
 	print("WaveManager initialized.")
 
+var _force_test_wave: bool = false
+
 func start_wave(wave_num: int):
 	is_wave_active = true
-	enemies_to_spawn = 3 + wave_num * 2
+	if _force_test_wave:
+		enemies_to_spawn = 20
+		spawn_interval = 0.5
+	else:
+		enemies_to_spawn = 3 + wave_num * 2
+		spawn_interval = max(0.5, 2.0 - (wave_num * 0.2))
+
 	enemies_alive = enemies_to_spawn
-	spawn_interval = max(0.5, 2.0 - (wave_num * 0.2))
 	spawn_timer = 0.0
 	print("Wave ", wave_num, " started. Enemies to spawn: ", enemies_to_spawn)
 
@@ -56,7 +63,9 @@ func spawn_enemy():
 
 	# Randomized enemy type logic (Basic, Swarm, Armored)
 	var e_type = randi() % 10
-	if game_manager and game_manager.current_wave < 2:
+	if _force_test_wave:
+		e_type = 7 # Force Swarm
+	elif game_manager and game_manager.current_wave < 2:
 		e_type = 0 # First waves only basic enemies
 
 	if e_type < 6:

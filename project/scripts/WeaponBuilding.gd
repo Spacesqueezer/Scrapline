@@ -22,6 +22,7 @@ func receive_payload(payload: Payload):
 
 	super(payload)
 	ammo_queue.append(payload)
+	queue_redraw()
 
 func _process(delta):
 	if not is_combat_active():
@@ -52,3 +53,13 @@ func fire(target: Node2D):
 	can_fire = false
 	timer = 0.0
 	on_fire.emit(payload_to_fire, global_position, target)
+	queue_redraw()
+
+func _draw():
+	super()
+
+	# Отрисовка счетчика патронов
+	var ammo_count = str(ammo_queue.size())
+	# Отрисовываем текст поверх здания (чуть ниже центра)
+	var text_pos = Vector2(0, 10)
+	draw_string(ThemeDB.fallback_font, text_pos, ammo_count, HORIZONTAL_ALIGNMENT_CENTER, -1, 24, Color.WHITE)

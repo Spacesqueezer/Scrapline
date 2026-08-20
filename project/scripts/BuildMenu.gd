@@ -7,9 +7,11 @@ extends Control
 @onready var wave_label = $VBoxContainer/WaveLabel
 @onready var base_hp_label = $VBoxContainer/BaseHPLabel
 @onready var selected_label = $VBoxContainer/SelectedLabel
+@onready var test_scenario_button = $VBoxContainer/TestScenarioButton
 
 signal on_building_selected(building_type: String)
 signal on_start_wave_pressed()
+signal on_test_scenario_pressed()
 
 func _ready():
 	# Ensure the UI doesn't block grid clicks where it's transparent
@@ -18,6 +20,9 @@ func _ready():
 	$VBoxContainer/HBoxContainer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	start_wave_button.pressed.connect(func(): on_start_wave_pressed.emit())
+
+	if test_scenario_button:
+		test_scenario_button.pressed.connect(func(): on_test_scenario_pressed.emit())
 
 	# Connect build buttons (Mocking UI data for now)
 	var btn_miner = Button.new()
@@ -46,6 +51,8 @@ func _ready():
 func update_state_label(state_name: String):
 	state_label.text = "State: " + state_name
 	start_wave_button.disabled = (state_name != "BUILD")
+	if test_scenario_button:
+		test_scenario_button.disabled = (state_name != "BUILD")
 
 func update_wave_label(wave: int):
 	wave_label.text = "Wave: " + str(wave)
