@@ -8,12 +8,20 @@ var ammo_queue: Array[Payload] = []
 
 signal on_fire(payload: Payload, start_pos: Vector2, target: Node2D)
 
-func _ready():
-	base_color = Color(0.8, 0.2, 0.2) # Красный для пушки
+func _init():
+	# Default to regular weapon
+	base_texture_path = "res://assets/weapon.svg"
 
 func setup_weapon(w_data: WeaponData, p_grid_pos: Vector2i):
-	super.setup(w_data, p_grid_pos)
 	weapon_data = w_data
+
+	# Если это дробовик, меняем текстуру
+	if w_data and w_data.firing_arc < 360.0:
+		base_texture_path = "res://assets/shotgun.svg"
+		if sprite:
+			sprite.texture = load(base_texture_path)
+
+	super.setup(w_data, p_grid_pos)
 
 func receive_payload(payload: Payload):
 	# Если мы в режиме стройки, просто игнорируем случайные остаточные патроны

@@ -10,27 +10,25 @@ signal on_payload_received(payload: Payload)
 # For outputting payload
 signal on_payload_output(payload: Payload, direction: Vector2i)
 
-var base_color: Color = Color(0.5, 0.5, 0.5)
+var sprite: Sprite2D
+var base_texture_path: String = ""
 
 func _ready():
-	queue_redraw()
+	if sprite == null:
+		sprite = Sprite2D.new()
+		add_child(sprite)
 
-func _draw():
-	# Отрисовываем квадрат для здания (чуть меньше ячейки 100х100)
-	var rect_size = 80.0
-	var offset = -rect_size / 2.0
-	var rect = Rect2(offset, offset, rect_size, rect_size)
-	draw_rect(rect, base_color, true)
-
-	# Отрисовываем "носик" (выход), чтобы понимать направление
-	if facing_direction != Vector2i.ZERO:
-		var dir = Vector2(facing_direction)
-		draw_line(Vector2.ZERO, dir * (rect_size / 2.0), Color.YELLOW, 3.0)
+	if base_texture_path != "":
+		# Важно: Godot импортирует SVG как текстуры.
+		# В Godot 4 texture_filter по умолчанию часто Linear, оставим так.
+		# Но если мы хотим использовать шейдер прокрутки UV, текстура должна иметь флаг Repeat.
+		var tex = load(base_texture_path)
+		sprite.texture = tex
+		sprite.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
 
 func setup(p_data: ModuleData, p_grid_pos: Vector2i):
 	data = p_data
 	grid_position = p_grid_pos
-	queue_redraw()
 
 func can_receive_payload() -> bool:
 	# Base class defaults to true. Subclasses like Modifier or Conveyor should override.
@@ -61,5 +59,13 @@ func rotate_building(dir: Vector2i = Vector2i.ZERO):
 	else:
 		facing_direction = dir
 
-	# Мы не вращаем саму ноду (чтобы UI текст не крутился), мы перерисовываем указатель
-	queue_redraw()
+	# Вращаем спрайт
+	if sprite:
+		if facing_direction == Vector2i.UP:
+			sprite.rotation_degrees = -90
+		elif facing_direction == Vector2i.RIGHT:
+			sprite.rotation_degrees = 0
+		elif facing_direction == Vector2i.DOWN:
+			sprite.rotation_degrees = 90
+		elif facing_direction == Vector2i.LEFT:
+			sprite.rotation_degrees = 180

@@ -7,8 +7,8 @@ var current_payload: Payload = null
 var timer: float = 0.0
 var is_processing: bool = false
 
-func _ready():
-	base_color = Color(0.2, 0.2, 0.8) # Синий для модификатора
+func _init():
+	base_texture_path = "res://assets/modifier.svg"
 
 func can_receive_payload() -> bool:
 	return not is_processing and current_payload == null

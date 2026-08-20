@@ -5,8 +5,11 @@ extends Building
 var timer: float = 0.0
 var active: bool = false
 
+func _init():
+	base_texture_path = "res://assets/miner.svg"
+
 func _ready():
-	base_color = Color(0.2, 0.6, 0.2) # Зеленый для шахты
+	super()
 	active = true
 
 func _process(delta):

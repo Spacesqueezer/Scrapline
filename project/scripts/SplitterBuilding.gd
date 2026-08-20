@@ -7,8 +7,8 @@ var current_payload: Payload = null
 var timer: float = 0.0
 var is_processing: bool = false
 
-func _ready():
-	base_color = Color(0.8, 0.8, 0.2) # Желтый для сплиттера
+func _init():
+	base_texture_path = "res://assets/splitter.svg"
 
 func receive_payload(payload: Payload):
 	if is_processing or current_payload != null:
@@ -77,23 +77,3 @@ func try_finish_processing():
 	timer = 0.0
 
 	on_payload_output.emit(out_p, out_dir)
-
-func _draw():
-	# Рисуем базовый квадрат
-	var rect_size = 80.0
-	var offset = -rect_size / 2.0
-	var rect = Rect2(offset, offset, rect_size, rect_size)
-	draw_rect(rect, base_color, true)
-
-	# Сплиттер рисует две линии-указателя, чтобы было понятно, куда он отдает
-	var dir1 = Vector2i.ZERO
-	var dir2 = Vector2i.ZERO
-	if facing_direction == Vector2i.UP or facing_direction == Vector2i.DOWN:
-		dir1 = Vector2i.LEFT
-		dir2 = Vector2i.RIGHT
-	else:
-		dir1 = Vector2i.UP
-		dir2 = Vector2i.DOWN
-
-	draw_line(Vector2.ZERO, Vector2(dir1) * (rect_size / 2.0), Color.YELLOW, 3.0)
-	draw_line(Vector2.ZERO, Vector2(dir2) * (rect_size / 2.0), Color.YELLOW, 3.0)

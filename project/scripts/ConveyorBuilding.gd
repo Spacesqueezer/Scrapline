@@ -6,8 +6,19 @@ var current_payload: Payload = null
 var timer: float = 0.0
 var is_processing: bool = false
 
+func _init():
+	base_texture_path = "res://assets/conveyor.svg"
+
 func _ready():
-	base_color = Color(0.4, 0.4, 0.4) # Серый конвейер
+	super()
+
+	# Применяем шейдер прокрутки для анимации конвейера
+	if sprite:
+		var mat = ShaderMaterial.new()
+		var shader = load("res://assets/conveyor.gdshader")
+		mat.shader = shader
+		mat.set_shader_parameter("speed", -1.0) # Отрицательная скорость, чтобы стрелки ехали "вперед" (вверх)
+		sprite.material = mat
 
 func can_receive_payload() -> bool:
 	return not is_processing and current_payload == null

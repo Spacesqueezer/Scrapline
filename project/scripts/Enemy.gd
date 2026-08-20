@@ -10,29 +10,19 @@ var is_active: bool = false
 signal on_death(enemy: Enemy)
 signal on_reach_base(enemy: Enemy)
 
+var sprite: Sprite2D
+
 func _ready():
-	queue_redraw()
+	sprite = Sprite2D.new()
+	add_child(sprite)
 
 func _draw():
-	# Рисуем врага с цветом в зависимости от его скорости/здоровья (типа)
-	var e_color = Color.PURPLE # Basic
-	var e_size = 20.0
-
-	if max_hp > 100.0:
-		e_color = Color.DARK_GRAY # Armored
-		e_size = 30.0
-	elif speed > 80.0:
-		e_color = Color.YELLOW # Swarm
-		e_size = 12.0
-
-	draw_circle(Vector2.ZERO, e_size, e_color)
-
-	# Рисуем полоску HP над врагом
+	# Рисуем полоску HP над врагом (спрайт рисуется автоматически)
 	if max_hp > 0:
 		var hp_ratio = clamp(hp / max_hp, 0.0, 1.0)
 		var bar_width = 40.0
 		var bar_height = 6.0
-		var offset_y = -30.0
+		var offset_y = -35.0
 
 		# Фон (Красный)
 		draw_rect(Rect2(-bar_width / 2.0, offset_y, bar_width, bar_height), Color.RED)
@@ -46,7 +36,17 @@ func setup(start_pos: Vector2, p_hp: float, p_speed: float, dir: Vector2):
 	speed = p_speed
 	move_direction = dir
 	is_active = true
+
+	if sprite:
+		if max_hp > 100.0:
+			sprite.texture = load("res://assets/enemy_armored.svg")
+		elif speed > 80.0:
+			sprite.texture = load("res://assets/enemy_swarm.svg")
+		else:
+			sprite.texture = load("res://assets/enemy_basic.svg")
+
 	show()
+	queue_redraw()
 
 func _process(delta):
 	if not is_active:
