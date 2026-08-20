@@ -35,8 +35,16 @@ func _unhandled_input(event):
 		if is_valid_pos(grid_pos) and current_selected_building != "":
 			if current_selected_building == "Delete":
 				remove_module(grid_pos)
+			elif current_selected_building == "Rotate":
+				rotate_module(grid_pos)
 			else:
 				attempt_build(grid_pos)
+
+func rotate_module(grid_pos: Vector2i):
+	if grid.has(grid_pos):
+		var module = grid[grid_pos] as Building
+		if module:
+			module.rotate_building()
 
 func attempt_build(grid_pos: Vector2i):
 	if grid.has(grid_pos):
@@ -67,6 +75,21 @@ func attempt_build(grid_pos: Vector2i):
 			new_building.setup_weapon(w_data, grid_pos)
 			new_building.facing_direction = Vector2i.UP
 			new_building.on_fire.connect(_on_weapon_fire)
+		"Shotgun":
+			new_building = WeaponBuilding.new()
+			var w_data = WeaponData.new()
+			w_data.fire_rate = 1.0
+			w_data.range = 250.0
+			w_data.firing_arc = 90.0
+			w_data.projectiles_per_shot = 3
+			new_building.setup_weapon(w_data, grid_pos)
+			new_building.facing_direction = Vector2i.UP
+			new_building.on_fire.connect(_on_weapon_fire)
+		"Splitter":
+			new_building = SplitterBuilding.new()
+			var md = ModuleData.new()
+			new_building.setup(md, grid_pos)
+			new_building.facing_direction = Vector2i.UP
 
 	if new_building:
 		place_module(grid_pos, new_building)
@@ -117,7 +140,14 @@ func _on_weapon_fire(payload: Payload, start_pos: Vector2, target: Node2D):
 			add_child(proj)
 
 		if proj:
+			# Для дробовика, чтобы пули не летели строго в одну точку,
+			# мы добавим небольшой случайный сдвиг к позиции цели,
+			# но так как Projectile сам вычисляет направление внутри setup(),
+			# мы можем просто передать target.
+			# В идеале нужно передавать направление или угол разброса.
 			proj.setup(start_pos, target, payload)
+			# Примитивный разброс:
+			proj.direction = proj.direction.rotated(deg_to_rad(randf_range(-15.0, 15.0)))
 
 ## Removes a module from the specified grid position
 func remove_module(grid_pos: Vector2i):

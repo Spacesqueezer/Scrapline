@@ -40,23 +40,38 @@ func _process(delta):
 			fire(target)
 
 func find_target() -> Node2D:
-	# Temporary mock: Return a target if one is in range.
-	# GameManager or WaveManager usually provides a list of enemies.
-	# For prototype, we will emit a signal or let GameManager inject target logic.
-	var gm = get_node_or_null("/root/Main/GameManager")
-	if gm and gm.has_method("get_closest_enemy"):
-		return gm.get_closest_enemy(global_position, weapon_data.range) if weapon_data else null
+	var wm = get_node_or_null("/root/Main/WaveManager")
+	if wm and weapon_data:
+		var face_dir = Vector2(facing_direction)
+		return wm.get_closest_enemy_in_arc(global_position, weapon_data.range, face_dir, weapon_data.firing_arc)
 	return null
 
 func fire(target: Node2D):
 	var payload_to_fire = ammo_queue.pop_front()
 	can_fire = false
 	timer = 0.0
-	on_fire.emit(payload_to_fire, global_position, target)
+
+	# Emit multiple times if shotgun
+	var count = weapon_data.projectiles_per_shot if weapon_data else 1
+	for i in range(count):
+		on_fire.emit(payload_to_fire, global_position, target)
+
 	queue_redraw()
 
 func _draw():
 	super()
+
+	# Отрисовываем сектор обстрела (если он меньше 360)
+	if weapon_data and weapon_data.firing_arc < 360.0:
+		var face_dir = Vector2(facing_direction)
+		var angle = face_dir.angle()
+		var arc_rad = deg_to_rad(weapon_data.firing_arc)
+
+		# Отрисовываем две линии, показывающие сектор
+		var p1 = Vector2.from_angle(angle - arc_rad/2) * 50.0
+		var p2 = Vector2.from_angle(angle + arc_rad/2) * 50.0
+		draw_line(Vector2.ZERO, p1, Color(1, 0, 0, 0.3), 2.0)
+		draw_line(Vector2.ZERO, p2, Color(1, 0, 0, 0.3), 2.0)
 
 	# Отрисовка счетчика патронов
 	var ammo_count = str(ammo_queue.size())

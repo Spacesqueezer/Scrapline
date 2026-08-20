@@ -43,14 +43,19 @@ func is_combat_active() -> bool:
 		return true
 	return false
 
-func rotate_building(dir: Vector2i):
-	facing_direction = dir
-	# Update visual rotation based on facing direction
-	if dir == Vector2i.RIGHT:
-		rotation_degrees = 0
-	elif dir == Vector2i.DOWN:
-		rotation_degrees = 90
-	elif dir == Vector2i.LEFT:
-		rotation_degrees = 180
-	elif dir == Vector2i.UP:
-		rotation_degrees = -90
+func rotate_building(dir: Vector2i = Vector2i.ZERO):
+	if dir == Vector2i.ZERO:
+		# Поворот на 90 градусов по часовой стрелке, если направление не передано
+		if facing_direction == Vector2i.UP:
+			facing_direction = Vector2i.RIGHT
+		elif facing_direction == Vector2i.RIGHT:
+			facing_direction = Vector2i.DOWN
+		elif facing_direction == Vector2i.DOWN:
+			facing_direction = Vector2i.LEFT
+		elif facing_direction == Vector2i.LEFT:
+			facing_direction = Vector2i.UP
+	else:
+		facing_direction = dir
+
+	# Мы не вращаем саму ноду (чтобы UI текст не крутился), мы перерисовываем указатель
+	queue_redraw()

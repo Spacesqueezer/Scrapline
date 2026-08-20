@@ -40,10 +40,25 @@ func _ready():
 	btn_weapon.pressed.connect(func(): on_building_selected.emit("Weapon"))
 	build_buttons_container.add_child(btn_weapon)
 
+	var btn_shotgun = Button.new()
+	btn_shotgun.text = "Shotgun"
+	btn_shotgun.pressed.connect(func(): on_building_selected.emit("Shotgun"))
+	build_buttons_container.add_child(btn_shotgun)
+
+	var btn_splitter = Button.new()
+	btn_splitter.text = "Splitter"
+	btn_splitter.pressed.connect(func(): on_building_selected.emit("Splitter"))
+	build_buttons_container.add_child(btn_splitter)
+
 	var btn_delete = Button.new()
 	btn_delete.text = "Delete"
 	btn_delete.pressed.connect(func(): on_building_selected.emit("Delete"))
 	build_buttons_container.add_child(btn_delete)
+
+	var btn_rotate = Button.new()
+	btn_rotate.text = "Rotate"
+	btn_rotate.pressed.connect(func(): on_building_selected.emit("Rotate"))
+	build_buttons_container.add_child(btn_rotate)
 
 	# Connect to own signal to update visual label
 	on_building_selected.connect(func(type): selected_label.text = "Selected: " + type)

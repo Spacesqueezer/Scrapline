@@ -108,13 +108,27 @@ func check_wave_end():
 		if game_manager:
 			game_manager.change_state(GameManager.GameState.REWARD)
 
-func get_closest_enemy(pos: Vector2, max_range: float) -> Node2D:
+func get_closest_enemy_in_arc(pos: Vector2, max_range: float, face_dir: Vector2, arc_degrees: float) -> Node2D:
 	var closest: Node2D = null
 	var min_dist = max_range
+	var arc_rad = deg_to_rad(arc_degrees)
+	var half_arc = arc_rad / 2.0
+
 	for e in active_enemies:
 		if e.is_active:
 			var dist = e.global_position.distance_to(pos)
 			if dist < min_dist:
-				min_dist = dist
-				closest = e
+				# Проверяем, находится ли враг внутри сектора обстрела
+				if arc_degrees >= 360.0:
+					min_dist = dist
+					closest = e
+				else:
+					var dir_to_enemy = (e.global_position - pos).normalized()
+					var angle_diff = face_dir.angle_to(dir_to_enemy)
+					if abs(angle_diff) <= half_arc:
+						min_dist = dist
+						closest = e
 	return closest
+
+func get_closest_enemy(pos: Vector2, max_range: float) -> Node2D:
+	return get_closest_enemy_in_arc(pos, max_range, Vector2.RIGHT, 360.0)
