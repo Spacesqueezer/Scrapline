@@ -6,6 +6,7 @@ extends Control
 @onready var state_label = $VBoxContainer/StateLabel
 @onready var wave_label = $VBoxContainer/WaveLabel
 @onready var base_hp_label = $VBoxContainer/BaseHPLabel
+@onready var selected_label = $VBoxContainer/SelectedLabel
 
 signal on_building_selected(building_type: String)
 signal on_start_wave_pressed()
@@ -28,6 +29,14 @@ func _ready():
 	btn_weapon.text = "Weapon"
 	btn_weapon.pressed.connect(func(): on_building_selected.emit("Weapon"))
 	build_buttons_container.add_child(btn_weapon)
+
+	var btn_delete = Button.new()
+	btn_delete.text = "Delete"
+	btn_delete.pressed.connect(func(): on_building_selected.emit("Delete"))
+	build_buttons_container.add_child(btn_delete)
+
+	# Connect to own signal to update visual label
+	on_building_selected.connect(func(type): selected_label.text = "Selected: " + type)
 
 func update_state_label(state_name: String):
 	state_label.text = "State: " + state_name

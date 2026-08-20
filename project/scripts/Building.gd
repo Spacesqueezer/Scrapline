@@ -16,8 +16,8 @@ func _ready():
 	queue_redraw()
 
 func _draw():
-	# Отрисовываем квадрат для здания (чуть меньше ячейки, например 56x56 при cell_size=64)
-	var rect_size = 56.0
+	# Отрисовываем квадрат для здания (чуть меньше ячейки 100х100)
+	var rect_size = 80.0
 	var offset = -rect_size / 2.0
 	var rect = Rect2(offset, offset, rect_size, rect_size)
 	draw_rect(rect, base_color, true)

@@ -14,6 +14,7 @@ script = ExtResource("1_gm")
 [node name="World2D" type="Node2D" parent="."]
 
 [node name="GridManager" type="Node2D" parent="World2D"]
+position = Vector2(10, 150)
 script = ExtResource("2_grid")
 
 [node name="PoolManager" type="Node" parent="."]

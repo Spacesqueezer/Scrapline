@@ -41,9 +41,19 @@ func spawn_enemy():
 		enemy = Enemy.new()
 		add_child(enemy)
 
-	# Spawn somewhere offscreen to the right, random Y
-	var random_y = randf_range(100.0, 500.0)
-	enemy.setup(Vector2(800, random_y), 50.0, 60.0, Vector2.LEFT)
+	# Spawn offscreen to the right, aligned with grid rows
+	var grid_manager = get_node("/root/Main/World2D/GridManager")
+	var cell_size = 100
+	var grid_offset = Vector2.ZERO
+	if grid_manager:
+		cell_size = grid_manager.cell_size
+		grid_offset = grid_manager.global_position
+
+	# Pick a random row between 0 and 8
+	var random_row = randi() % 9
+	var spawn_y = grid_offset.y + (random_row * cell_size) + (cell_size / 2.0)
+
+	enemy.setup(Vector2(800, spawn_y), 50.0, 60.0, Vector2.LEFT)
 
 	if not enemy.on_death.is_connected(_on_enemy_death):
 		enemy.on_death.connect(_on_enemy_death)

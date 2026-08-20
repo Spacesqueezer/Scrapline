@@ -2,7 +2,7 @@ class_name GridManager
 extends Node2D
 
 var grid_size: Vector2i = Vector2i(7, 9)
-var cell_size: int = 64
+var cell_size: int = 100
 
 # Dictionary to map Vector2i grid coordinates to Module Nodes
 var grid: Dictionary = {}
@@ -24,10 +24,17 @@ func _unhandled_input(event):
 	if not can_build:
 		return
 
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-		var grid_pos = world_to_grid(get_global_mouse_position())
+	# In Godot 4, it's safer to check for both mouse clicks and screen touches
+	if (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed) or (event is InputEventScreenTouch and event.pressed):
+		# Use local mouse position to account for the GridManager's node offset on screen
+		var local_pos = get_local_mouse_position()
+		var grid_pos = world_to_grid(local_pos)
+
 		if is_valid_pos(grid_pos) and current_selected_building != "":
-			attempt_build(grid_pos)
+			if current_selected_building == "Delete":
+				remove_module(grid_pos)
+			else:
+				attempt_build(grid_pos)
 
 func attempt_build(grid_pos: Vector2i):
 	if grid.has(grid_pos):
