@@ -10,7 +10,6 @@ signal on_fire(payload: Payload, start_pos: Vector2, target: Node2D)
 
 func _ready():
 	base_color = Color(0.8, 0.2, 0.2) # Красный для пушки
-	super()
 
 func setup_weapon(w_data: WeaponData, p_grid_pos: Vector2i):
 	super.setup(w_data, p_grid_pos)

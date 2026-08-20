@@ -2,7 +2,7 @@ class_name Projectile
 extends Node2D
 
 var payload: Payload
-var target: Node2D
+var target # Duck typing, может быть Enemy или любой Node2D со здоровьем
 var speed: float = 300.0
 var is_active: bool = false
 var direction: Vector2 = Vector2.ZERO
@@ -16,7 +16,7 @@ func _draw():
 	# Рисуем маленький оранжевый снаряд
 	draw_circle(Vector2.ZERO, 8.0, Color.ORANGE)
 
-func setup(start_pos: Vector2, p_target: Node2D, p_payload: Payload):
+func setup(start_pos: Vector2, p_target, p_payload: Payload):
 	global_position = start_pos
 	target = p_target
 	payload = p_payload
@@ -47,7 +47,7 @@ func _process(delta):
 		if global_position.x < -100 or global_position.x > 1000 or global_position.y < -100 or global_position.y > 1500:
 			deactivate()
 
-func hit(hit_target: Node2D):
+func hit(hit_target):
 	if hit_target.has_method("take_damage"):
 		hit_target.take_damage(payload.base_damage, payload.tags)
 	deactivate()

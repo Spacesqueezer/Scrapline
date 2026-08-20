@@ -9,7 +9,6 @@ var is_processing: bool = false
 
 func _ready():
 	base_color = Color(0.2, 0.2, 0.8) # Синий для модификатора
-	super()
 
 func receive_payload(payload: Payload):
 	if is_processing or current_payload != null:

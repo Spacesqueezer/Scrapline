@@ -7,9 +7,60 @@ var cell_size: int = 64
 # Dictionary to map Vector2i grid coordinates to Module Nodes
 var grid: Dictionary = {}
 
+var current_selected_building: String = ""
+var can_build: bool = true
+
+@onready var pool_manager = get_node("/root/Main/PoolManager")
+
 func _ready():
 	print("GridManager initialized. Size: ", grid_size)
 	queue_redraw()
+
+func set_selected_building(building_type: String):
+	current_selected_building = building_type
+	print("Selected building to build: ", current_selected_building)
+
+func _unhandled_input(event):
+	if not can_build:
+		return
+
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		var grid_pos = world_to_grid(get_global_mouse_position())
+		if is_valid_pos(grid_pos) and current_selected_building != "":
+			attempt_build(grid_pos)
+
+func attempt_build(grid_pos: Vector2i):
+	if grid.has(grid_pos):
+		print("Cell occupied!")
+		return
+
+	var new_building: Building = null
+	match current_selected_building:
+		"Miner":
+			new_building = Miner.new()
+			var md = ModuleData.new()
+			new_building.setup(md, grid_pos)
+			new_building.facing_direction = Vector2i.RIGHT
+		"Modifier":
+			new_building = ModifierBuilding.new()
+			var mod_data = ModifierData.new()
+			var tags: Array[String] = ["Explosive", "Fire"]
+			mod_data.tags_to_add = tags
+			mod_data.stat_multipliers = {"damage": 1.5}
+			new_building.modifier_data = mod_data
+			new_building.setup(mod_data, grid_pos)
+			new_building.facing_direction = Vector2i.RIGHT
+		"Weapon":
+			new_building = WeaponBuilding.new()
+			var w_data = WeaponData.new()
+			w_data.fire_rate = 2.0
+			w_data.range = 500.0
+			new_building.setup_weapon(w_data, grid_pos)
+			new_building.facing_direction = Vector2i.RIGHT
+			new_building.on_fire.connect(_on_weapon_fire)
+
+	if new_building:
+		place_module(grid_pos, new_building)
 
 func _draw():
 	# Отрисовываем сетку для прототипа
@@ -46,6 +97,18 @@ func place_module(grid_pos: Vector2i, module_node: Node2D) -> bool:
 		connect_building(module_node)
 
 	return true
+
+func _on_weapon_fire(payload: Payload, start_pos: Vector2, target: Node2D):
+	if target:
+		var proj = null
+		if pool_manager:
+			proj = pool_manager.get_projectile()
+		else:
+			proj = Projectile.new()
+			add_child(proj)
+
+		if proj:
+			proj.setup(start_pos, target, payload)
 
 ## Removes a module from the specified grid position
 func remove_module(grid_pos: Vector2i):

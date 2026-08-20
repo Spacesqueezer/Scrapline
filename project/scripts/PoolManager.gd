@@ -19,25 +19,33 @@ func get_enemy() -> Enemy:
 		if not e.is_active:
 			return e
 
+	var new_enemy: Enemy
 	if enemy_scene:
-		var new_enemy = enemy_scene.instantiate() as Enemy
-		add_child(new_enemy)
-		enemy_pool.append(new_enemy)
-		new_enemy.hide()
-		new_enemy.is_active = false
-		return new_enemy
-	return null
+		new_enemy = enemy_scene.instantiate() as Enemy
+	else:
+		# Fallback to direct instantiation for prototyping
+		new_enemy = Enemy.new()
+
+	add_child(new_enemy)
+	enemy_pool.append(new_enemy)
+	new_enemy.hide()
+	new_enemy.is_active = false
+	return new_enemy
 
 func get_projectile() -> Projectile:
 	for p in projectile_pool:
 		if not p.is_active:
 			return p
 
+	var new_proj: Projectile
 	if projectile_scene:
-		var new_proj = projectile_scene.instantiate() as Projectile
-		add_child(new_proj)
-		projectile_pool.append(new_proj)
-		new_proj.hide()
-		new_proj.is_active = false
-		return new_proj
-	return null
+		new_proj = projectile_scene.instantiate() as Projectile
+	else:
+		# Fallback to direct instantiation for prototyping
+		new_proj = Projectile.new()
+
+	add_child(new_proj)
+	projectile_pool.append(new_proj)
+	new_proj.hide()
+	new_proj.is_active = false
+	return new_proj

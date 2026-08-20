@@ -17,33 +17,63 @@ signal state_changed(new_state: GameState)
 signal wave_started(wave_num: int)
 signal base_damaged(amount: int, current_hp: int)
 
+@onready var wave_manager = $"../WaveManager"
+@onready var grid_manager = $"../World2D/GridManager"
+@onready var build_menu = $"../UILayer/BuildMenu"
+
 func _ready():
 	print("GameManager initialized.")
-	change_state(GameState.BUILD)
+
+	# Connect UI Signals if possible
+	if build_menu:
+		build_menu.on_start_wave_pressed.connect(_on_ui_start_wave)
+		build_menu.on_building_selected.connect(_on_ui_building_selected)
+
+		# Connect to own signals to update UI
+		state_changed.connect(func(state):
+			var state_name = GameState.keys()[state]
+			build_menu.update_state_label(state_name)
+		)
+		wave_started.connect(func(w): build_menu.update_wave_label(w))
+		base_damaged.connect(func(amt, hp): build_menu.update_base_hp(hp))
+
+	# Delay initial state to let UI load
+	call_deferred("change_state", GameState.BUILD)
+
+func _on_ui_start_wave():
+	if current_state == GameState.BUILD:
+		change_state(GameState.COMBAT)
+
+func _on_ui_building_selected(b_type: String):
+	if current_state == GameState.BUILD and grid_manager:
+		grid_manager.set_selected_building(b_type)
 
 func change_state(new_state: GameState):
 	current_state = new_state
 	state_changed.emit(current_state)
 
+	if grid_manager:
+		grid_manager.can_build = (current_state == GameState.BUILD)
+
 	match current_state:
 		GameState.BUILD:
 			print("Phase: BUILD")
-			# Enable grid interactions
 		GameState.COMBAT:
 			print("Phase: COMBAT")
 			start_wave()
 		GameState.REWARD:
 			print("Phase: REWARD")
-			# Show reward draft UI
+			# For now, auto-skip reward back to build
+			call_deferred("change_state", GameState.BUILD)
 		GameState.GAME_OVER:
 			print("Phase: GAME OVER")
-			# Show game over screen
 
 func start_wave():
 	current_wave += 1
 	wave_started.emit(current_wave)
 	print("Starting Wave: ", current_wave)
-	# Trigger WaveManager to start spawning enemies
+	if wave_manager:
+		wave_manager.start_wave(current_wave)
 
 func damage_base(amount: int):
 	base_hp -= amount
@@ -52,8 +82,6 @@ func damage_base(amount: int):
 		change_state(GameState.GAME_OVER)
 
 func get_closest_enemy(pos: Vector2, max_range: float) -> Node2D:
-	if has_meta("mock_target"):
-		var target = get_meta("mock_target")
-		if target and target.is_active and target.global_position.distance_to(pos) <= max_range:
-			return target
+	if wave_manager:
+		return wave_manager.get_closest_enemy(pos, max_range)
 	return null
