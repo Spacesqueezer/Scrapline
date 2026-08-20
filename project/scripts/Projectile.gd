@@ -3,7 +3,7 @@ extends Node2D
 
 var payload: Payload
 var target # Duck typing, может быть Enemy или любой Node2D со здоровьем
-var speed: float = 300.0
+var speed: float = 600.0
 var is_active: bool = false
 var direction: Vector2 = Vector2.ZERO
 
@@ -62,7 +62,7 @@ func _process(delta):
 	if wave_manager:
 		var hit_target = null
 		for enemy in wave_manager.active_enemies:
-			if enemy.is_active and global_position.distance_to(enemy.global_position) < 25.0:
+			if enemy.is_active and global_position.distance_to(enemy.global_position) < 35.0:
 				hit_target = enemy
 				break
 
