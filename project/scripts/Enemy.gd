@@ -65,6 +65,14 @@ func take_damage(amount: float, tags: Array[String]):
 	hp -= amount
 	queue_redraw()
 
+	# Создаем всплывающий текст урона
+	var ft = FloatingText.new()
+	var color = Color.WHITE
+	if "Fire" in tags or "Explosive" in tags:
+		color = Color.RED
+	get_tree().current_scene.add_child(ft)
+	ft.setup(str(int(amount)), global_position, color)
+
 	if hp <= 0:
 		die()
 

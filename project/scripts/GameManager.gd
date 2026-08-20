@@ -67,6 +67,9 @@ func change_state(new_state: GameState):
 			call_deferred("change_state", GameState.BUILD)
 		GameState.GAME_OVER:
 			print("Phase: GAME OVER")
+			var game_over_menu = get_node_or_null("/root/Main/UILayer/GameOverMenu")
+			if game_over_menu:
+				game_over_menu.show()
 
 func start_wave():
 	current_wave += 1

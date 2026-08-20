@@ -23,6 +23,10 @@ script = ExtResource("4_pool")
 [node name="WaveManager" type="Node" parent="."]
 script = ExtResource("3_wave")
 
+[ext_resource type="PackedScene" uid="uid://e4y234def567" path="res://scenes/game_over_menu.tscn" id="6_go"]
+
 [node name="UILayer" type="CanvasLayer" parent="."]
 
 [node name="BuildMenu" parent="UILayer" instance=ExtResource("5_ui")]
+
+[node name="GameOverMenu" parent="UILayer" instance=ExtResource("6_go")]

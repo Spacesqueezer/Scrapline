@@ -144,8 +144,19 @@ func _on_building_output(payload: Payload, direction: Vector2i, source_building:
 	if is_valid_pos(target_pos) and grid.has(target_pos):
 		var target_building = grid[target_pos] as Building
 		if target_building:
+			# Отправляем ресурс целевому зданию с задержкой (симуляция движения по конвейеру)
+			visualize_payload_transfer(payload, source_building.global_position, target_building.global_position)
+
+			# TODO: В идеале использовать таймер, но для MVP можно просто передать ресурс
+			# Мы можем передать ресурс сразу, а анимация будет просто визуальной,
+			# но для реализма лучше передавать его в конце анимации.
+			# Для надежности прототипа пока передаем сразу, а летит он "для красоты".
 			target_building.receive_payload(payload)
 	else:
-		# Nowhere to go, payload is lost or clogs up.
-		# For now, it just disappears.
+		# Nowhere to go, payload is lost
 		pass
+
+func visualize_payload_transfer(payload: Payload, start: Vector2, end: Vector2):
+	var vis = PayloadVisualizer.new()
+	add_child(vis)
+	vis.setup(payload, start, end)
