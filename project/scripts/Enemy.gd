@@ -54,8 +54,8 @@ func _process(delta):
 
 	global_position += move_direction * speed * delta
 
-	# Simple base reach check (if it goes too far left)
-	if global_position.x < 50: # Mock coordinate for base
+	# Проверка достижения базы (враг ушел за нижний край экрана, например Y > 1100)
+	if global_position.y > 1100:
 		reach_base()
 
 func take_damage(amount: float, tags: Array[String]):

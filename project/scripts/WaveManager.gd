@@ -41,7 +41,7 @@ func spawn_enemy():
 		enemy = Enemy.new()
 		add_child(enemy)
 
-	# Spawn offscreen to the right, aligned with grid rows
+	# Спавн за верхним краем экрана, выравнивание по столбцам (колонкам) сетки
 	var grid_manager = get_node("/root/Main/World2D/GridManager")
 	var cell_size = 100
 	var grid_offset = Vector2.ZERO
@@ -49,9 +49,10 @@ func spawn_enemy():
 		cell_size = grid_manager.cell_size
 		grid_offset = grid_manager.global_position
 
-	# Pick a random row between 0 and 8
-	var random_row = randi() % 9
-	var spawn_y = grid_offset.y + (random_row * cell_size) + (cell_size / 2.0)
+	# Выбираем случайную колонку (от 0 до 6 для ширины 7)
+	var random_col = randi() % 7
+	var spawn_x = grid_offset.x + (random_col * cell_size) + (cell_size / 2.0)
+	var spawn_y = -100.0 # Выше экрана
 
 	# Randomized enemy type logic (Basic, Swarm, Armored)
 	var e_type = randi() % 10
@@ -60,13 +61,13 @@ func spawn_enemy():
 
 	if e_type < 6:
 		# Basic Enemy: 50 HP, 60 Speed
-		enemy.setup(Vector2(800, spawn_y), 50.0, 60.0, Vector2.LEFT)
+		enemy.setup(Vector2(spawn_x, spawn_y), 50.0, 60.0, Vector2.DOWN)
 	elif e_type < 8:
 		# Swarm Enemy: 20 HP, 120 Speed
-		enemy.setup(Vector2(800, spawn_y), 20.0, 120.0, Vector2.LEFT)
+		enemy.setup(Vector2(spawn_x, spawn_y), 20.0, 120.0, Vector2.DOWN)
 	else:
 		# Armored Enemy: 150 HP, 30 Speed
-		enemy.setup(Vector2(800, spawn_y), 150.0, 30.0, Vector2.LEFT)
+		enemy.setup(Vector2(spawn_x, spawn_y), 150.0, 30.0, Vector2.DOWN)
 
 	if not enemy.on_death.is_connected(_on_enemy_death):
 		enemy.on_death.connect(_on_enemy_death)

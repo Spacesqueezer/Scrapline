@@ -49,7 +49,7 @@ func attempt_build(grid_pos: Vector2i):
 			new_building = Miner.new()
 			var md = ModuleData.new()
 			new_building.setup(md, grid_pos)
-			new_building.facing_direction = Vector2i.RIGHT
+			new_building.facing_direction = Vector2i.UP
 		"Modifier":
 			new_building = ModifierBuilding.new()
 			var mod_data = ModifierData.new()
@@ -58,14 +58,14 @@ func attempt_build(grid_pos: Vector2i):
 			mod_data.stat_multipliers = {"damage": 1.5}
 			new_building.modifier_data = mod_data
 			new_building.setup(mod_data, grid_pos)
-			new_building.facing_direction = Vector2i.RIGHT
+			new_building.facing_direction = Vector2i.UP
 		"Weapon":
 			new_building = WeaponBuilding.new()
 			var w_data = WeaponData.new()
 			w_data.fire_rate = 2.0
 			w_data.range = 500.0
 			new_building.setup_weapon(w_data, grid_pos)
-			new_building.facing_direction = Vector2i.RIGHT
+			new_building.facing_direction = Vector2i.UP
 			new_building.on_fire.connect(_on_weapon_fire)
 
 	if new_building:
