@@ -32,6 +32,10 @@ func setup(p_data: ModuleData, p_grid_pos: Vector2i):
 	grid_position = p_grid_pos
 	queue_redraw()
 
+func can_receive_payload() -> bool:
+	# Base class defaults to true. Subclasses like Modifier or Conveyor should override.
+	return true
+
 func receive_payload(payload: Payload):
 	# Base class logic. Override in subclasses.
 	on_payload_received.emit(payload)

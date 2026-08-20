@@ -30,6 +30,11 @@ func _ready():
 	btn_miner.pressed.connect(func(): on_building_selected.emit("Miner"))
 	build_buttons_container.add_child(btn_miner)
 
+	var btn_conveyor = Button.new()
+	btn_conveyor.text = "Conveyor"
+	btn_conveyor.pressed.connect(func(): on_building_selected.emit("Conveyor"))
+	build_buttons_container.add_child(btn_conveyor)
+
 	var btn_modifier = Button.new()
 	btn_modifier.text = "Modifier"
 	btn_modifier.pressed.connect(func(): on_building_selected.emit("Modifier"))

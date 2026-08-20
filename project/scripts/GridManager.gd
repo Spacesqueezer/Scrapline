@@ -58,6 +58,11 @@ func attempt_build(grid_pos: Vector2i):
 			var md = ModuleData.new()
 			new_building.setup(md, grid_pos)
 			new_building.facing_direction = Vector2i.UP
+		"Conveyor":
+			new_building = ConveyorBuilding.new()
+			var md = ModuleData.new()
+			new_building.setup(md, grid_pos)
+			new_building.facing_direction = Vector2i.UP
 		"Modifier":
 			new_building = ModifierBuilding.new()
 			var mod_data = ModifierData.new()
@@ -179,14 +184,14 @@ func _on_building_output(payload: Payload, direction: Vector2i, source_building:
 	if is_valid_pos(target_pos) and grid.has(target_pos):
 		var target_building = grid[target_pos] as Building
 		if target_building:
-			# Отправляем ресурс целевому зданию с задержкой (симуляция движения по конвейеру)
-			visualize_payload_transfer(payload, source_building.global_position, target_building.global_position)
-
-			# TODO: В идеале использовать таймер, но для MVP можно просто передать ресурс
-			# Мы можем передать ресурс сразу, а анимация будет просто визуальной,
-			# но для реализма лучше передавать его в конце анимации.
-			# Для надежности прототипа пока передаем сразу, а летит он "для красоты".
-			target_building.receive_payload(payload)
+			# Если принимающее здание может принять
+			if not target_building.has_method("can_receive_payload") or target_building.can_receive_payload():
+				visualize_payload_transfer(payload, source_building.global_position, target_building.global_position)
+				target_building.receive_payload(payload)
+			else:
+				# Здание забито, ресурс теряется (в идеале нужно возвращать false из on_payload_output
+				# и блокировать отправителя, но в нашей событийной MVP модели пока так).
+				pass
 	else:
 		# Nowhere to go, payload is lost
 		pass

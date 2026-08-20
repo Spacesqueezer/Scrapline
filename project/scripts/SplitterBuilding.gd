@@ -19,18 +19,21 @@ func receive_payload(payload: Payload):
 	is_processing = true
 	timer = 0.0
 
+func can_receive_payload() -> bool:
+	return not is_processing and current_payload == null
+
 func _process(delta):
 	if is_processing and is_combat_active():
 		timer += delta
 		if timer >= processing_time:
-			finish_processing()
+			try_finish_processing()
 
-func finish_processing():
-	is_processing = false
-	var out_p = current_payload
-	current_payload = null
+func try_finish_processing():
+	# Получаем ссылки на соседей через GridManager
+	var gm = get_node_or_null("/root/Main/World2D/GridManager")
+	if not gm:
+		return
 
-	# Вычисляем направления влево и вправо относительно текущего facing_direction
 	var left_dir = Vector2i.ZERO
 	var right_dir = Vector2i.ZERO
 
@@ -47,8 +50,31 @@ func finish_processing():
 		left_dir = Vector2i.DOWN
 		right_dir = Vector2i.UP
 
-	var out_dir = left_dir if toggle else right_dir
-	toggle = not toggle # Переключаем для следующего ресурса
+	var b_left = gm.get_module_at(grid_position + left_dir)
+	var b_right = gm.get_module_at(grid_position + right_dir)
+
+	var can_go_left = b_left != null and b_left.has_method("can_receive_payload") and b_left.can_receive_payload()
+	var can_go_right = b_right != null and b_right.has_method("can_receive_payload") and b_right.can_receive_payload()
+
+	# Если оба забиты или отсутствуют — сплиттер забивается, ресурс ждет
+	if not can_go_left and not can_go_right:
+		return
+
+	var out_dir = Vector2i.ZERO
+
+	# Если свободен только один — шлем туда. Если оба, то чередуем.
+	if can_go_left and not can_go_right:
+		out_dir = left_dir
+	elif can_go_right and not can_go_left:
+		out_dir = right_dir
+	else:
+		out_dir = left_dir if toggle else right_dir
+		toggle = not toggle
+
+	is_processing = false
+	var out_p = current_payload
+	current_payload = null
+	timer = 0.0
 
 	on_payload_output.emit(out_p, out_dir)
 
