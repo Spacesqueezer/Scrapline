@@ -41,7 +41,7 @@ func receive_payload(payload: Payload):
 # Проверка, идет ли сейчас бой, чтобы здания не работали в режиме стройки
 func is_combat_active() -> bool:
 	var gm = get_node_or_null("/root/Main/GameManager")
-	if gm and gm.current_state == gm.GameState.COMBAT:
+	if gm and gm.current_state == GameManager.GameState.COMBAT:
 		return true
 	return false
 

@@ -17,7 +17,7 @@ func _ready():
 		var mat = ShaderMaterial.new()
 		var shader = load("res://assets/conveyor.gdshader")
 		mat.shader = shader
-		mat.set_shader_parameter("speed", -1.0) # Отрицательная скорость, чтобы стрелки ехали "вперед" (вверх)
+		mat.set_shader_parameter("speed", -1.0) # Для прокрутки по горизонтали/вертикали в шейдере
 		sprite.material = mat
 
 func can_receive_payload() -> bool:

@@ -132,6 +132,8 @@ func place_module(grid_pos: Vector2i, module_node: Node2D) -> bool:
 	if module_node is Building:
 		module_node.grid_position = grid_pos
 		connect_building(module_node)
+		# Синхронизируем логическое направление со вращением спрайта при постройке
+		module_node.rotate_building(module_node.facing_direction)
 
 	return true
 

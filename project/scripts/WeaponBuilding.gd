@@ -67,8 +67,6 @@ func fire(target: Node2D):
 	queue_redraw()
 
 func _draw():
-	super()
-
 	# Отрисовываем сектор обстрела (если он меньше 360)
 	if weapon_data and weapon_data.firing_arc < 360.0:
 		var face_dir = Vector2(facing_direction)
