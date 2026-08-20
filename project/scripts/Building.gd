@@ -36,8 +36,12 @@ func receive_payload(payload: Payload):
 	# Base class logic. Override in subclasses.
 	on_payload_received.emit(payload)
 
-func process_building(delta: float):
-	pass
+# Проверка, идет ли сейчас бой, чтобы здания не работали в режиме стройки
+func is_combat_active() -> bool:
+	var gm = get_node_or_null("/root/Main/GameManager")
+	if gm and gm.current_state == gm.GameState.COMBAT:
+		return true
+	return false
 
 func rotate_building(dir: Vector2i):
 	facing_direction = dir

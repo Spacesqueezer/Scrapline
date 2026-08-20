@@ -14,8 +14,18 @@ func _ready():
 	queue_redraw()
 
 func _draw():
-	# Рисуем круг для врага
-	draw_circle(Vector2.ZERO, 20.0, Color.PURPLE)
+	# Рисуем врага с цветом в зависимости от его скорости/здоровья (типа)
+	var e_color = Color.PURPLE # Basic
+	var e_size = 20.0
+
+	if max_hp > 100.0:
+		e_color = Color.DARK_GRAY # Armored
+		e_size = 30.0
+	elif speed > 80.0:
+		e_color = Color.YELLOW # Swarm
+		e_size = 12.0
+
+	draw_circle(Vector2.ZERO, e_size, e_color)
 
 	# Рисуем полоску HP над врагом
 	if max_hp > 0:

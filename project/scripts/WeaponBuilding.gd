@@ -16,10 +16,17 @@ func setup_weapon(w_data: WeaponData, p_grid_pos: Vector2i):
 	weapon_data = w_data
 
 func receive_payload(payload: Payload):
+	# Если мы в режиме стройки, просто игнорируем случайные остаточные патроны
+	if not is_combat_active():
+		return
+
 	super(payload)
 	ammo_queue.append(payload)
 
 func _process(delta):
+	if not is_combat_active():
+		return
+
 	if not can_fire:
 		timer += delta
 		if weapon_data and timer >= (1.0 / weapon_data.fire_rate):

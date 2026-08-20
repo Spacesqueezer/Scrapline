@@ -30,9 +30,21 @@ func setup(start_pos: Vector2, p_target, p_payload: Payload):
 	is_active = true
 	show()
 
-	# Снаряд летит строго по прямой к той точке, где был враг в момент выстрела.
+	# Расчет упреждения (Lead target calculation)
 	if target and is_instance_valid(target):
-		direction = (target.global_position - global_position).normalized()
+		var target_pos = target.global_position
+
+		# Если у цели есть скорость и направление, пытаемся предсказать позицию
+		if "speed" in target and "move_direction" in target:
+			var target_vel = target.move_direction * target.speed
+			var dist = global_position.distance_to(target_pos)
+			var time_to_reach = dist / speed
+
+			# Предсказанная позиция = текущая позиция + (скорость * время)
+			var predicted_pos = target_pos + (target_vel * time_to_reach)
+			direction = (predicted_pos - global_position).normalized()
+		else:
+			direction = (target_pos - global_position).normalized()
 	else:
 		direction = Vector2.RIGHT
 

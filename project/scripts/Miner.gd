@@ -10,7 +10,7 @@ func _ready():
 	active = true
 
 func _process(delta):
-	if not active:
+	if not active or not is_combat_active():
 		return
 
 	timer += delta

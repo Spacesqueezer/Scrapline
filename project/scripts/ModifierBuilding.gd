@@ -22,7 +22,7 @@ func receive_payload(payload: Payload):
 	timer = 0.0
 
 func _process(delta):
-	if is_processing:
+	if is_processing and is_combat_active():
 		timer += delta
 		if timer >= processing_time:
 			finish_processing()

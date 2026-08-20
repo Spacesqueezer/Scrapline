@@ -53,7 +53,20 @@ func spawn_enemy():
 	var random_row = randi() % 9
 	var spawn_y = grid_offset.y + (random_row * cell_size) + (cell_size / 2.0)
 
-	enemy.setup(Vector2(800, spawn_y), 50.0, 60.0, Vector2.LEFT)
+	# Randomized enemy type logic (Basic, Swarm, Armored)
+	var e_type = randi() % 10
+	if game_manager and game_manager.current_wave < 2:
+		e_type = 0 # First waves only basic enemies
+
+	if e_type < 6:
+		# Basic Enemy: 50 HP, 60 Speed
+		enemy.setup(Vector2(800, spawn_y), 50.0, 60.0, Vector2.LEFT)
+	elif e_type < 8:
+		# Swarm Enemy: 20 HP, 120 Speed
+		enemy.setup(Vector2(800, spawn_y), 20.0, 120.0, Vector2.LEFT)
+	else:
+		# Armored Enemy: 150 HP, 30 Speed
+		enemy.setup(Vector2(800, spawn_y), 150.0, 30.0, Vector2.LEFT)
 
 	if not enemy.on_death.is_connected(_on_enemy_death):
 		enemy.on_death.connect(_on_enemy_death)
