@@ -2,10 +2,14 @@ class_name Projectile
 extends Node2D
 
 var payload: Payload
-var target # Duck typing, может быть Enemy или любой Node2D со здоровьем
-var speed: float = 600.0
+var start_point: Vector2
+var end_point: Vector2
 var is_active: bool = false
-var direction: Vector2 = Vector2.ZERO
+var lifetime: float = 0.1 # Время видимости трассера
+var current_time: float = 0.0
+
+# Переменная направления (используется для промахов/дробовика)
+var direction: Vector2 = Vector2.RIGHT
 
 signal on_hit(projectile: Projectile)
 
@@ -13,40 +17,40 @@ func _ready():
 	queue_redraw()
 
 func _draw():
+	if not is_active:
+		return
+
 	var proj_color = Color.ORANGE
-	var proj_size = 8.0
+	var proj_thickness = 2.0
 
 	if payload:
 		if "Fire" in payload.tags or "Explosive" in payload.tags:
 			proj_color = Color.RED
-			proj_size = 14.0 # Снаряд становится больше, если прошел через модификатор
+			proj_thickness = 5.0
 
-	draw_circle(Vector2.ZERO, proj_size, proj_color)
+	# Уменьшаем прозрачность (alpha) по мере исчезновения трассера
+	proj_color.a = 1.0 - (current_time / lifetime)
 
-func setup(start_pos: Vector2, p_target, p_payload: Payload):
-	global_position = start_pos
-	target = p_target
+	# Рисуем линию (трассер) в локальных координатах
+	draw_line(Vector2.ZERO, end_point - start_point, proj_color, proj_thickness)
+
+func setup(p_start_pos: Vector2, p_target, p_payload: Payload):
+	global_position = p_start_pos
+	start_point = p_start_pos
 	payload = p_payload
 	is_active = true
+	current_time = 0.0
 	show()
 
-	# Расчет упреждения (Lead target calculation)
-	if target and is_instance_valid(target):
-		var target_pos = target.global_position
-
-		# Если у цели есть скорость и направление, пытаемся предсказать позицию
-		if "speed" in target and "move_direction" in target:
-			var target_vel = target.move_direction * target.speed
-			var dist = global_position.distance_to(target_pos)
-			var time_to_reach = dist / speed
-
-			# Предсказанная позиция = текущая позиция + (скорость * время)
-			var predicted_pos = target_pos + (target_vel * time_to_reach)
-			direction = (predicted_pos - global_position).normalized()
-		else:
-			direction = (target_pos - global_position).normalized()
+	# Хитскан: мгновенно находим точку попадания и наносим урон
+	if p_target and is_instance_valid(p_target):
+		end_point = p_target.global_position
+		# Наносим урон мгновенно
+		if p_target.has_method("take_damage"):
+			p_target.take_damage(payload.base_damage, payload.tags)
 	else:
-		direction = Vector2.RIGHT
+		# Если цели нет, летим вперед (с учетом direction, который мог быть передан извне, например, от дробовика)
+		end_point = start_point + direction * 500.0
 
 	queue_redraw()
 
@@ -54,30 +58,11 @@ func _process(delta):
 	if not is_active:
 		return
 
-	# Движение строго по прямой
-	global_position += direction * speed * delta
+	current_time += delta
+	queue_redraw()
 
-	# Универсальная проверка столкновений (со всеми активными врагами)
-	var wave_manager = get_node_or_null("/root/Main/WaveManager")
-	if wave_manager:
-		var hit_target = null
-		for enemy in wave_manager.active_enemies:
-			if enemy.is_active and global_position.distance_to(enemy.global_position) < 35.0:
-				hit_target = enemy
-				break
-
-		if hit_target:
-			hit(hit_target)
-			return
-
-	# Удаление при вылете за экран
-	if global_position.x < -100 or global_position.x > 1000 or global_position.y < -100 or global_position.y > 1500:
+	if current_time >= lifetime:
 		deactivate()
-
-func hit(hit_target):
-	if hit_target.has_method("take_damage"):
-		hit_target.take_damage(payload.base_damage, payload.tags)
-	deactivate()
 
 func deactivate():
 	is_active = false

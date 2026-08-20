@@ -118,7 +118,8 @@ func change_state(new_state: GameState):
 				wave_manager._force_test_wave = false
 
 			if reward_menu:
-				reward_menu.generate_and_show_draft()
+				var unlocked = build_menu.unlocked_buildings if build_menu else []
+				reward_menu.generate_and_show_draft(unlocked)
 			else:
 				call_deferred("change_state", GameState.BUILD)
 		GameState.GAME_OVER:

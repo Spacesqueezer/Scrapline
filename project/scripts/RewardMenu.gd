@@ -24,16 +24,21 @@ func _ready():
 	card3.pressed.connect(func(): _select_reward(2))
 	skip_btn.pressed.connect(func(): on_reward_selected.emit("None"))
 
-func generate_and_show_draft():
+func generate_and_show_draft(unlocked_buildings: Array[String] = []):
 	current_options.clear()
 
-	# Создаем копию пула и перемешиваем (в Godot 4 shuffle работает in-place)
-	var pool_copy = possible_rewards.duplicate()
-	pool_copy.shuffle()
+	# Фильтруем возможные награды, оставляя только те, которых еще нет в unlocked_buildings
+	var filtered_rewards = []
+	for reward in possible_rewards:
+		if reward not in unlocked_buildings:
+			filtered_rewards.append(reward)
+
+	# Перемешиваем
+	filtered_rewards.shuffle()
 
 	# Берем до 3 уникальных карточек
-	for i in range(min(3, pool_copy.size())):
-		current_options.append(pool_copy[i])
+	for i in range(min(3, filtered_rewards.size())):
+		current_options.append(filtered_rewards[i])
 
 	# Настраиваем UI кнопок
 	if current_options.size() > 0:

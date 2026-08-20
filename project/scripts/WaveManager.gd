@@ -117,7 +117,7 @@ func get_closest_enemy_in_arc(pos: Vector2, max_range: float, face_dir: Vector2,
 	for e in active_enemies:
 		if e.is_active:
 			var dist = e.global_position.distance_to(pos)
-			if dist < min_dist:
+			if dist <= max_range and dist < min_dist:
 				# Проверяем, находится ли враг внутри сектора обстрела
 				if arc_degrees >= 360.0:
 					min_dist = dist
@@ -129,6 +129,27 @@ func get_closest_enemy_in_arc(pos: Vector2, max_range: float, face_dir: Vector2,
 						min_dist = dist
 						closest = e
 	return closest
+
+func get_random_enemy_in_arc(pos: Vector2, max_range: float, face_dir: Vector2, arc_degrees: float) -> Node2D:
+	var valid_targets: Array[Node2D] = []
+	var arc_rad = deg_to_rad(arc_degrees)
+	var half_arc = arc_rad / 2.0
+
+	for e in active_enemies:
+		if e.is_active:
+			var dist = e.global_position.distance_to(pos)
+			if dist <= max_range:
+				if arc_degrees >= 360.0:
+					valid_targets.append(e)
+				else:
+					var dir_to_enemy = (e.global_position - pos).normalized()
+					var angle_diff = face_dir.angle_to(dir_to_enemy)
+					if abs(angle_diff) <= half_arc:
+						valid_targets.append(e)
+
+	if valid_targets.size() > 0:
+		return valid_targets[randi() % valid_targets.size()]
+	return null
 
 func get_closest_enemy(pos: Vector2, max_range: float) -> Node2D:
 	return get_closest_enemy_in_arc(pos, max_range, Vector2.RIGHT, 360.0)
