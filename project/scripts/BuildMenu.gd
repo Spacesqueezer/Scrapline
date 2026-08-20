@@ -12,6 +12,11 @@ signal on_building_selected(building_type: String)
 signal on_start_wave_pressed()
 
 func _ready():
+	# Ensure the UI doesn't block grid clicks where it's transparent
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	$VBoxContainer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	$VBoxContainer/HBoxContainer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
 	start_wave_button.pressed.connect(func(): on_start_wave_pressed.emit())
 
 	# Connect build buttons (Mocking UI data for now)

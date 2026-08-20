@@ -30,6 +30,7 @@ func _draw():
 func setup(p_data: ModuleData, p_grid_pos: Vector2i):
 	data = p_data
 	grid_position = p_grid_pos
+	queue_redraw()
 
 func receive_payload(payload: Payload):
 	# Base class logic. Override in subclasses.

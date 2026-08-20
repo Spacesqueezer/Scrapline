@@ -30,6 +30,8 @@ func _unhandled_input(event):
 		var local_pos = get_local_mouse_position()
 		var grid_pos = world_to_grid(local_pos)
 
+		print("Input at local_pos: ", local_pos, " | grid_pos: ", grid_pos, " | Valid: ", is_valid_pos(grid_pos))
+
 		if is_valid_pos(grid_pos) and current_selected_building != "":
 			if current_selected_building == "Delete":
 				remove_module(grid_pos)
@@ -70,11 +72,11 @@ func attempt_build(grid_pos: Vector2i):
 		place_module(grid_pos, new_building)
 
 func _draw():
-	# Отрисовываем сетку для прототипа
+	# Отрисовываем сетку для прототипа (используем белый цвет, чтобы было видно на сером фоне)
 	for x in range(grid_size.x + 1):
-		draw_line(Vector2(x * cell_size, 0), Vector2(x * cell_size, grid_size.y * cell_size), Color(0.3, 0.3, 0.3, 0.5), 1.0)
+		draw_line(Vector2(x * cell_size, 0), Vector2(x * cell_size, grid_size.y * cell_size), Color(1.0, 1.0, 1.0, 0.3), 3.0)
 	for y in range(grid_size.y + 1):
-		draw_line(Vector2(0, y * cell_size), Vector2(grid_size.x * cell_size, y * cell_size), Color(0.3, 0.3, 0.3, 0.5), 1.0)
+		draw_line(Vector2(0, y * cell_size), Vector2(grid_size.x * cell_size, y * cell_size), Color(1.0, 1.0, 1.0, 0.3), 3.0)
 
 ## Converts world position to grid coordinates
 func world_to_grid(pos: Vector2) -> Vector2i:
