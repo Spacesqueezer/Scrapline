@@ -29,10 +29,14 @@ func setup_weapon(w_data: WeaponData, p_grid_pos: Vector2i):
 		ammo_label = Label.new()
 		ammo_label.set_anchors_preset(Control.PRESET_CENTER)
 		ammo_label.position = Vector2(-20, -10)
-		ammo_label.add_theme_font_size_override("font_size", 20)
+		ammo_label.add_theme_font_size_override("font_size", 24)
 		ammo_label.add_theme_color_override("font_color", Color.WHITE)
 		ammo_label.add_theme_color_override("font_outline_color", Color.BLACK)
 		ammo_label.add_theme_constant_override("outline_size", 4)
+		ammo_label.z_index = 10 # Убеждаемся, что текст рисуется поверх спрайта и линий сектора
+
+		# Делаем так, чтобы Label не крутился вместе с базовым Rotation (в Godot 4 CanvasItem не крутится,
+		# но если мы крутили саму ноду - это спасло бы. Мы крутим Sprite, так что Label и так прямой).
 		add_child(ammo_label)
 		_update_ammo_label()
 
