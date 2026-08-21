@@ -135,6 +135,7 @@ func _on_ui_test_scenario():
 	print("Test scenario setup complete: Miner -> Processor -> Weapon.")
 
 func change_state(new_state: GameState):
+	print("[GameManager] change_state called, from: ", current_state, " to: ", new_state)
 	current_state = new_state
 	state_changed.emit(current_state)
 

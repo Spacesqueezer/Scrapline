@@ -107,6 +107,7 @@ func _process(delta):
 
 	# Если враг ушел за нижний край экрана
 	if global_position.y > 1100:
+		print("[Enemy] out of bounds! y: ", global_position.y)
 		reach_base()
 
 func _find_closest_building(grid_manager) -> Building:
@@ -152,6 +153,7 @@ func die():
 	on_death.emit(self)
 
 func reach_base():
+	print("[Enemy] reach_base called! My pos: ", global_position)
 	is_active = false
 	hide()
 	on_reach_base.emit(self)

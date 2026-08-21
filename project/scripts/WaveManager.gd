@@ -48,6 +48,7 @@ func _process(delta):
 			enemies_to_spawn -= 1
 
 func spawn_enemy():
+	print("[WaveManager] spawn_enemy called. enemies_to_spawn: ", enemies_to_spawn, " is_boss_wave: ", game_manager and game_manager.current_wave > 0 and game_manager.current_wave % 5 == 0 and not _force_test_wave)
 	var grid_manager = get_node("/root/Main/World2D/GridManager")
 	var cell_size = 100
 	var grid_offset = Vector2.ZERO
@@ -107,6 +108,8 @@ func _on_enemy_death(enemy: Enemy):
 		enemy.queue_free()
 
 func _on_enemy_reach_base(enemy: Enemy):
+	print("[WaveManager] _on_enemy_reach_base triggered! Base HP minus 10.")
+	print("[WaveManager] _on_enemy_reach_base triggered by enemy: ", enemy.enemy_type_name, ", at pos: ", enemy.global_position)
 	active_enemies.erase(enemy)
 	enemies_alive -= 1
 

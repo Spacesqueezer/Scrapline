@@ -1,6 +1,7 @@
 extends Control
 
 func _ready():
+	hide()
 	var restart_btn = $VBoxContainer/RestartButton
 	if restart_btn:
 		restart_btn.pressed.connect(_go_to_main_menu)

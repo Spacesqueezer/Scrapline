@@ -7,13 +7,17 @@ func _init():
 	base_texture_path = "res://assets/core.svg"
 
 func _ready():
-	super()
+	super._ready()
+	print("[CoreBuilding] _ready called, max_hp: ", max_hp, ", hp: ", hp)
+
 	max_hp = 200.0
+	hp = max_hp
+	print("[CoreBuilding] HP forced to ", hp)
 	hp = max_hp
 
 # Ядро ничего не производит и не передает (пока), только питает фабрику и выступает целью
 func take_damage(amount: float):
-	print("Core taking damage! amount: ", amount, ", current hp: ", hp)
+	print("[CoreBuilding] take_damage called! amount: ", amount, ", current hp: ", hp, ", is_destroyed: ", is_destroyed)
 	if is_destroyed:
 		return
 
@@ -35,6 +39,7 @@ func receive_payload(payload: Payload):
 	pass
 
 func on_destroyed():
+	print("[CoreBuilding] on_destroyed called, hp is: ", hp)
 	# Если ядро уничтожено - игра окончена
 	var gm = get_node_or_null("/root/Main/GameManager")
 	if gm:
