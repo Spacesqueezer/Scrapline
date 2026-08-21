@@ -3,7 +3,7 @@ extends Node2D
 
 @export var data: ModuleData
 var grid_position: Vector2i
-var facing_direction: Vector2i = Vector2i.RIGHT # UP, DOWN, LEFT, RIGHT
+var facing_direction: Vector2i = Vector2i.UP # UP, DOWN, LEFT, RIGHT
 
 # For receiving payload
 signal on_payload_received(payload: Payload)
@@ -158,10 +158,11 @@ func rotate_building(dir: Vector2i = Vector2i.ZERO):
 	# Вращаем спрайт
 	if sprite:
 		if facing_direction == Vector2i.UP:
-			sprite.rotation_degrees = -90
-		elif facing_direction == Vector2i.RIGHT:
 			sprite.rotation_degrees = 0
-		elif facing_direction == Vector2i.DOWN:
+		elif facing_direction == Vector2i.RIGHT:
 			sprite.rotation_degrees = 90
-		elif facing_direction == Vector2i.LEFT:
+		elif facing_direction == Vector2i.DOWN:
 			sprite.rotation_degrees = 180
+		elif facing_direction == Vector2i.LEFT:
+			sprite.rotation_degrees = 270
+	queue_redraw()
