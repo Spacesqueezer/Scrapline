@@ -130,6 +130,14 @@ func change_state(new_state: GameState):
 				call_deferred("change_state", GameState.BUILD)
 		GameState.GAME_OVER:
 			print("Phase: GAME OVER")
+
+			# Начисляем награду за забег в SaveManager (10 скрапа за каждую волну)
+			if SaveManager:
+				var scrap_reward = current_wave * 10
+				SaveManager.add_scrap(scrap_reward)
+				SaveManager.update_max_wave(current_wave)
+				print("Saved meta progress. Awarded ", scrap_reward, " scrap.")
+
 			var game_over_menu = get_node_or_null("/root/Main/UILayer/GameOverMenu")
 			if game_over_menu:
 				game_over_menu.show()

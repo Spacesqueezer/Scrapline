@@ -110,7 +110,9 @@ func check_wave_end():
 		is_wave_active = false
 		print("Wave complete!")
 		if game_manager:
-			game_manager.change_state(GameManager.GameState.REWARD)
+			# Если ядро было уничтожено, стейт уже GAME_OVER, не переключаемся на REWARD
+			if game_manager.current_state != GameManager.GameState.GAME_OVER:
+				game_manager.change_state(GameManager.GameState.REWARD)
 
 func get_closest_enemy_in_arc(pos: Vector2, max_range: float, face_dir: Vector2, arc_degrees: float) -> Node2D:
 	var closest: Node2D = null

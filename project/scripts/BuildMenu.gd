@@ -17,6 +17,10 @@ var unlocked_buildings: Array[String] = ["Miner", "Conveyor", "Weapon"]
 var building_buttons: Dictionary = {}
 
 func _ready():
+	# Если есть сохранения, берем разблокированные модули оттуда
+	if SaveManager and SaveManager.save_data.has("unlocked_modules"):
+		unlocked_buildings = SaveManager.save_data["unlocked_modules"]
+
 	# Ensure the UI doesn't block grid clicks where it's transparent
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	$VBoxContainer.mouse_filter = Control.MOUSE_FILTER_IGNORE
