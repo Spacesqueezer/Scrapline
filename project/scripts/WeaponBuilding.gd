@@ -103,6 +103,9 @@ func _reset_state():
 	_update_ammo_label()
 
 func _draw():
+	# Вызываем базовую отрисовку полоски HP
+	super._draw()
+
 	# Отрисовываем сектор обстрела (если он меньше 360)
 	if weapon_data and weapon_data.firing_arc < 360.0:
 		var face_dir = Vector2(facing_direction)

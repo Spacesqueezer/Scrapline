@@ -32,11 +32,24 @@ func _ready():
 
 	hp = max_hp
 
+func _draw():
+	if not is_destroyed and hp < max_hp and max_hp > 0:
+		var hp_ratio = clamp(hp / max_hp, 0.0, 1.0)
+		var bar_width = 40.0
+		var bar_height = 6.0
+		var offset_y = -40.0
+
+		# Фон (Красный)
+		draw_rect(Rect2(-bar_width / 2.0, offset_y, bar_width, bar_height), Color.RED)
+		# Текущее HP (Зеленый)
+		draw_rect(Rect2(-bar_width / 2.0, offset_y, bar_width * hp_ratio, bar_height), Color.GREEN)
+
 func take_damage(amount: float):
 	if is_destroyed:
 		return
 
 	hp -= amount
+	queue_redraw()
 	if hp <= 0:
 		hp = 0
 		is_destroyed = true
@@ -57,6 +70,7 @@ func _reset_state():
 func repair():
 	is_destroyed = false
 	hp = max_hp
+	queue_redraw()
 	if sprite:
 		sprite.modulate = Color.WHITE
 

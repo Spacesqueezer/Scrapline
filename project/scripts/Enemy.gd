@@ -52,39 +52,69 @@ var attack_timer: float = 0.0
 var attack_rate: float = 1.0
 var attack_damage: float = 10.0
 var target_building: Building = null
+var attack_range: float = 60.0 # Дистанция атаки
 
 func _process(delta):
 	if not is_active:
 		return
 
-	# Если есть живая цель перед нами - останавливаемся и бьем
-	if target_building and not target_building.is_destroyed:
-		attack_timer += delta
-		if attack_timer >= attack_rate:
-			attack_timer = 0.0
-			target_building.take_damage(attack_damage)
-			# Небольшая визуальная обратная связь атаки врага
-			global_position.y += 5
-			var t = get_tree().create_timer(0.1)
-			t.timeout.connect(func(): global_position.y -= 5)
-		return
-	else:
-		target_building = null
+	var grid_manager = get_node_or_null("/root/Main/World2D/GridManager")
 
-	# Иначе движемся дальше
+	# Поиск ближайшей живой цели, если текущей нет или она уничтожена
+	if target_building == null or target_building.is_destroyed:
+		target_building = _find_closest_building(grid_manager)
+
+	# Если цель есть, проверяем дистанцию
+	if target_building and not target_building.is_destroyed:
+		var dist = global_position.distance_to(target_building.global_position)
+		if dist <= attack_range:
+			# В радиусе атаки - останавливаемся и бьем
+			attack_timer += delta
+			if attack_timer >= attack_rate:
+				attack_timer = 0.0
+				target_building.take_damage(attack_damage)
+				# Небольшая визуальная обратная связь атаки врага
+				var attack_dir = (target_building.global_position - global_position).normalized()
+				global_position += attack_dir * 5
+				var t = get_tree().create_timer(0.1)
+				t.timeout.connect(func(): global_position -= attack_dir * 5)
+			return
+		else:
+			# Движемся к цели
+			move_direction = (target_building.global_position - global_position).normalized()
+
+			# Поворот спрайта по направлению движения
+			if sprite:
+				sprite.rotation = move_direction.angle() - PI/2 # минус 90 градусов, т.к. изначально смотрит вниз
+	else:
+		# Если вообще нет зданий на карте (маловероятно), просто идем вниз
+		move_direction = Vector2.DOWN
+		if sprite:
+			sprite.rotation = 0
+
+	# Применяем движение
 	global_position += move_direction * speed * delta
 
-	# Проверка столкновения со зданиями
-	var grid_manager = get_node_or_null("/root/Main/World2D/GridManager")
-	if grid_manager:
-		var grid_pos = grid_manager.world_to_grid(global_position + Vector2(0, 30)) # Немного впереди врага
-		var b = grid_manager.get_module_at(grid_pos)
-		if b is Building and not b.is_destroyed:
-			target_building = b
-
-	# Если враг ушел за нижний край экрана (дошел до Ядра или прошел мимо)
+	# Если враг ушел за нижний край экрана
 	if global_position.y > 1100:
 		reach_base()
+
+func _find_closest_building(grid_manager) -> Building:
+	if not grid_manager:
+		return null
+
+	var closest_b: Building = null
+	var min_dist = INF
+
+	for key in grid_manager.grid:
+		var b = grid_manager.grid[key]
+		if b is Building and not b.is_destroyed:
+			var dist = global_position.distance_to(b.global_position)
+			if dist < min_dist:
+				min_dist = dist
+				closest_b = b
+
+	return closest_b
 
 func take_damage(amount: float, tags: Array[String]):
 	if not is_active:
