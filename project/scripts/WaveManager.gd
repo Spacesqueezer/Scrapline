@@ -159,3 +159,45 @@ func get_random_enemy_in_arc(pos: Vector2, max_range: float, face_dir: Vector2, 
 
 func get_closest_enemy(pos: Vector2, max_range: float) -> Node2D:
 	return get_closest_enemy_in_arc(pos, max_range, Vector2.RIGHT, 360.0)
+
+# Трассировка луча для вычисления попадания (хендмейд raycast без физического движка)
+# Возвращает словарь: {"hit": bool, "target": Node2D (если попали), "point": Vector2 (куда долетел луч)}
+func raycast_enemy(start_pos: Vector2, direction: Vector2, max_range: float, hit_radius: float = 30.0) -> Dictionary:
+	var end_pos = start_pos + direction * max_range
+	var closest_target = null
+	var closest_dist = max_range
+
+	for e in active_enemies:
+		if not e.is_active:
+			continue
+
+		# Проецируем позицию врага на линию луча, чтобы найти кратчайшее расстояние от центра врага до луча
+		var to_enemy = e.global_position - start_pos
+		var projection_length = to_enemy.dot(direction)
+
+		# Если враг позади точки старта или дальше максимальной дальности, пропускаем
+		if projection_length < 0 or projection_length > max_range:
+			continue
+
+		# Ближайшая точка на луче к центру врага
+		var closest_point_on_ray = start_pos + direction * projection_length
+		var dist_to_ray = closest_point_on_ray.distance_to(e.global_position)
+
+		if dist_to_ray <= hit_radius:
+			if projection_length < closest_dist:
+				closest_dist = projection_length
+				closest_target = e
+
+	if closest_target != null:
+		return {
+			"hit": true,
+			"target": closest_target,
+			# Для визуализации берем точку на радиусе врага
+			"point": start_pos + direction * closest_dist
+		}
+
+	return {
+		"hit": false,
+		"target": null,
+		"point": end_pos
+	}

@@ -34,23 +34,26 @@ func _draw():
 	# Рисуем линию (трассер) в локальных координатах
 	draw_line(Vector2.ZERO, end_point - start_point, proj_color, proj_thickness)
 
-func setup(p_start_pos: Vector2, p_target, p_payload: Payload):
+func setup(p_start_pos: Vector2, p_target, p_payload: Payload, hit_point: Vector2 = Vector2.ZERO):
 	global_position = p_start_pos
 	start_point = p_start_pos
 	payload = p_payload
 	is_active = true
 	current_time = 0.0
+
+	# Используем точную точку попадания, переданную оружием
+	if hit_point != Vector2.ZERO:
+		end_point = hit_point
+	elif p_target and is_instance_valid(p_target):
+		end_point = p_target.global_position
+	else:
+		end_point = start_point + direction * 500.0
+
 	show()
 
-	# Хитскан: мгновенно находим точку попадания и наносим урон
-	if p_target and is_instance_valid(p_target):
-		end_point = p_target.global_position
-		# Наносим урон мгновенно
-		if p_target.has_method("take_damage"):
-			p_target.take_damage(payload.base_damage, payload.tags)
-	else:
-		# Если цели нет, летим вперед (с учетом direction, который мог быть передан извне, например, от дробовика)
-		end_point = start_point + direction * 500.0
+	# Хитскан: наносим урон мгновенно, если попали
+	if p_target and is_instance_valid(p_target) and p_target.has_method("take_damage"):
+		p_target.take_damage(payload.base_damage, payload.tags)
 
 	queue_redraw()
 

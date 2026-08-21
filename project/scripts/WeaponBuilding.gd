@@ -8,7 +8,7 @@ var ammo_queue: Array[Payload] = []
 
 var ammo_label: Label
 
-signal on_fire(payload: Payload, start_pos: Vector2, target: Node2D)
+signal on_fire(payload: Payload, start_pos: Vector2, target: Node2D, hit_point: Vector2)
 
 func _init():
 	# Default to regular weapon
@@ -79,18 +79,33 @@ func fire(target: Node2D):
 	var count = weapon_data.projectiles_per_shot if weapon_data else 1
 	var wm = get_node_or_null("/root/Main/WaveManager")
 	var face_dir = Vector2(facing_direction)
+	var w_range = weapon_data.range if weapon_data else 500.0
 
 	for i in range(count):
 		var current_target = target
+		var hit_point = target.global_position if target else global_position + face_dir * w_range
+		var shot_dir = face_dir
 
-		# Если это дробовик (несколько дробинок), мы пытаемся выбрать для каждой дробинки
-		# случайную цель в секторе, чтобы получился урон по площади/толпе
-		if count > 1 and wm:
-			var rand_target = wm.get_random_enemy_in_arc(global_position, weapon_data.range, face_dir, weapon_data.firing_arc)
-			if rand_target:
-				current_target = rand_target
+		# Логика дробовика (конусное распределение пуль и raycast)
+		if count > 1 and wm and weapon_data:
+			var arc_rad = deg_to_rad(weapon_data.firing_arc)
+			var base_angle = face_dir.angle()
 
-		on_fire.emit(payload_to_fire, global_position, current_target)
+			# Равномерно распределяем лучи по сектору или добавляем случайный разброс
+			var random_offset = randf_range(-arc_rad / 2.0, arc_rad / 2.0)
+			var ray_angle = base_angle + random_offset
+			shot_dir = Vector2(cos(ray_angle), sin(ray_angle))
+
+			# Трассируем луч, чтобы понять, в кого или куда мы попали
+			var raycast_result = wm.raycast_enemy(global_position, shot_dir, w_range)
+			if raycast_result["hit"]:
+				current_target = raycast_result["target"]
+				hit_point = raycast_result["point"]
+			else:
+				current_target = null
+				hit_point = raycast_result["point"]
+
+		on_fire.emit(payload_to_fire, global_position, current_target, hit_point)
 
 	_update_ammo_label()
 

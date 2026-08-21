@@ -157,24 +157,18 @@ func place_module(grid_pos: Vector2i, module_node: Node2D) -> bool:
 
 	return true
 
-func _on_weapon_fire(payload: Payload, start_pos: Vector2, target: Node2D):
-	if target:
-		var proj = null
-		if pool_manager:
-			proj = pool_manager.get_projectile()
-		else:
-			proj = Projectile.new()
-			add_child(proj)
+func _on_weapon_fire(payload: Payload, start_pos: Vector2, target: Node2D, hit_point: Vector2):
+	var proj = null
+	if pool_manager:
+		proj = pool_manager.get_projectile()
+	else:
+		proj = Projectile.new()
+		add_child(proj)
 
-		if proj:
-			# Для дробовика, чтобы пули не летели строго в одну точку,
-			# мы добавим небольшой случайный сдвиг к позиции цели,
-			# но так как Projectile сам вычисляет направление внутри setup(),
-			# мы можем просто передать target.
-			# В идеале нужно передавать направление или угол разброса.
-			proj.setup(start_pos, target, payload)
-			# Примитивный разброс:
-			proj.direction = proj.direction.rotated(deg_to_rad(randf_range(-15.0, 15.0)))
+	if proj:
+		# Вызов setup теперь учитывает hit_point. Оружие уже вычислило,
+		# попало оно во врага или пуля летит в пустоту.
+		proj.setup(start_pos, target, payload, hit_point)
 
 ## Removes a module from the specified grid position
 func remove_module(grid_pos: Vector2i):
