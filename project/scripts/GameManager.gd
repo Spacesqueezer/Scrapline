@@ -145,6 +145,9 @@ func change_state(new_state: GameState):
 	match current_state:
 		GameState.BUILD:
 			print("Phase: BUILD")
+			max_energy += 20
+			current_energy += 20
+			energy_changed.emit(current_energy, max_energy)
 			if grid_manager:
 				for key in grid_manager.grid.keys():
 					var building = grid_manager.grid[key] as Building
