@@ -18,6 +18,8 @@ var hp: float = 50.0
 var is_destroyed: bool = false
 var hp_bar_node: Node2D
 
+var emp_timer_node: Timer
+
 func _ready():
 	if sprite == null:
 		sprite = Sprite2D.new()
@@ -27,6 +29,11 @@ func _ready():
 	hp_bar_node.z_index = 20 # Гарантируем, что полоска будет поверх спрайта здания
 	add_child(hp_bar_node)
 	hp_bar_node.draw.connect(_on_hp_bar_draw)
+
+	emp_timer_node = Timer.new()
+	emp_timer_node.one_shot = true
+	emp_timer_node.timeout.connect(_on_emp_timeout)
+	add_child(emp_timer_node)
 
 	if base_texture_path != "":
 		# Важно: Godot импортирует SVG как текстуры.
@@ -42,10 +49,10 @@ func _draw():
 	pass
 
 func _on_hp_bar_draw():
-	# Поворачиваем Node отрисовки HP так, чтобы полоска всегда была горизонтальной,
-	# даже если само здание (через parent transform) или его спрайт повернуто.
-	# Поскольку мы вращаем sprite.rotation_degrees в rotate_building, сам узел Building не крутится.
-	# Но на всякий случай можно оставить как есть, главное, что offset_y достаточно большой.
+	# Отрисовка эффекта EMP (желтый квадрат)
+	if is_emped() and not is_destroyed:
+		var emp_size = 80.0
+		hp_bar_node.draw_rect(Rect2(-emp_size / 2.0, -emp_size / 2.0, emp_size, emp_size), Color(1.0, 1.0, 0.0, 0.4))
 
 	if not is_destroyed and hp < max_hp and max_hp > 0:
 		var hp_ratio = clamp(hp / max_hp, 0.0, 1.0)
@@ -57,6 +64,21 @@ func _on_hp_bar_draw():
 		hp_bar_node.draw_rect(Rect2(-bar_width / 2.0, offset_y, bar_width, bar_height), Color.RED)
 		# Текущее HP (Зеленый)
 		hp_bar_node.draw_rect(Rect2(-bar_width / 2.0, offset_y, bar_width * hp_ratio, bar_height), Color.GREEN)
+
+func apply_emp(duration: float):
+	if is_destroyed:
+		return
+	var current_time_left = emp_timer_node.time_left if not emp_timer_node.is_stopped() else 0.0
+	emp_timer_node.start(max(current_time_left, duration))
+	if hp_bar_node:
+		hp_bar_node.queue_redraw()
+
+func is_emped() -> bool:
+	return emp_timer_node != null and not emp_timer_node.is_stopped()
+
+func _on_emp_timeout():
+	if hp_bar_node:
+		hp_bar_node.queue_redraw()
 
 func take_damage(amount: float):
 	if is_destroyed:
@@ -85,6 +107,8 @@ func _reset_state():
 func repair():
 	is_destroyed = false
 	hp = max_hp
+	if emp_timer_node:
+		emp_timer_node.stop()
 	if hp_bar_node:
 		hp_bar_node.queue_redraw()
 	if sprite:
@@ -94,9 +118,9 @@ func setup(p_data: ModuleData, p_grid_pos: Vector2i):
 	data = p_data
 	grid_position = p_grid_pos
 
-func can_receive_payload() -> bool:
-	# Если здание уничтожено, оно ничего не принимает
-	if is_destroyed:
+func can_receive_payload(payload: Payload = null) -> bool:
+	# Если здание уничтожено или замкнуто, оно ничего не принимает
+	if is_destroyed or is_emped():
 		return false
 	# Base class defaults to true. Subclasses like Modifier or Conveyor should override.
 	return true
@@ -107,7 +131,7 @@ func receive_payload(payload: Payload):
 
 # Проверка, идет ли сейчас бой, чтобы здания не работали в режиме стройки
 func is_combat_active() -> bool:
-	if is_destroyed:
+	if is_destroyed or is_emped():
 		return false
 	var gm = get_node_or_null("/root/Main/GameManager")
 	if gm and gm.current_state == GameManager.GameState.COMBAT:

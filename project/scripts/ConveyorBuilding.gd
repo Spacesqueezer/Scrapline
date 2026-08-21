@@ -20,7 +20,8 @@ func _ready():
 		mat.set_shader_parameter("speed", -1.0) # Для прокрутки по горизонтали/вертикали в шейдере
 		sprite.material = mat
 
-func can_receive_payload() -> bool:
+func can_receive_payload(payload: Payload = null) -> bool:
+	if not super(payload): return false
 	return not is_processing and current_payload == null
 
 func receive_payload(payload: Payload):

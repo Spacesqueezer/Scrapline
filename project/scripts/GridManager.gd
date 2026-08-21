@@ -78,7 +78,16 @@ func attempt_build(grid_pos: Vector2i):
 		"Conveyor":
 			new_building = ConveyorBuilding.new()
 			var md = ModuleData.new()
+			var lvl = SaveManager.get_module_level("Conveyor") if SaveManager else 1
 			new_building.setup(md, grid_pos)
+			new_building.processing_time = 0.1 / (1.0 + (lvl - 1) * 0.1) # Ускорение передачи
+			new_building.facing_direction = Vector2i.UP
+		"Processor":
+			new_building = ProcessorBuilding.new()
+			var md = ModuleData.new()
+			var lvl = SaveManager.get_module_level("Processor") if SaveManager else 1
+			new_building.setup(md, grid_pos)
+			new_building.processing_time = 0.5 / (1.0 + (lvl - 1) * 0.1) # Ускорение переработки
 			new_building.facing_direction = Vector2i.UP
 		"Modifier":
 			new_building = ModifierBuilding.new()
@@ -213,13 +222,12 @@ func _on_building_output(payload: Payload, direction: Vector2i, source_building:
 	if is_valid_pos(target_pos) and grid.has(target_pos):
 		var target_building = grid[target_pos] as Building
 		if target_building:
-			# Если принимающее здание может принять
-			if not target_building.has_method("can_receive_payload") or target_building.can_receive_payload():
+			# Передаем payload в can_receive_payload, чтобы здание могло отфильтровать тип ресурса
+			if not target_building.has_method("can_receive_payload") or target_building.can_receive_payload(payload):
 				visualize_payload_transfer(payload, source_building.global_position, target_building.global_position)
 				target_building.receive_payload(payload)
 			else:
-				# Здание забито, ресурс теряется (в идеале нужно возвращать false из on_payload_output
-				# и блокировать отправителя, но в нашей событийной MVP модели пока так).
+				# Здание забито или ресурс не подходит, ресурс теряется
 				pass
 	else:
 		# Nowhere to go, payload is lost

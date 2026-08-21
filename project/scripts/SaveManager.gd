@@ -9,6 +9,7 @@ var save_data = {
 	"modules": {
 		"Miner": {"unlocked": true, "level": 1},
 		"Conveyor": {"unlocked": true, "level": 1},
+		"Processor": {"unlocked": true, "level": 1},
 		"Weapon": {"unlocked": true, "level": 1},
 		"Shotgun": {"unlocked": false, "level": 0},
 		"Splitter": {"unlocked": false, "level": 0},

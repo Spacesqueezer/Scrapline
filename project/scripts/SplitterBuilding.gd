@@ -19,7 +19,8 @@ func receive_payload(payload: Payload):
 	is_processing = true
 	timer = 0.0
 
-func can_receive_payload() -> bool:
+func can_receive_payload(payload: Payload = null) -> bool:
+	if not super(payload): return false
 	return not is_processing and current_payload == null
 
 func _process(delta):

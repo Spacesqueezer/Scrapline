@@ -1,17 +1,21 @@
-class_name ModifierBuilding
+class_name ProcessorBuilding
 extends Building
 
-@export var modifier_data: ModifierData
-var processing_time: float = 0.2 # Small delay for processing
+var processing_time: float = 0.5
 var current_payload: Payload = null
 var timer: float = 0.0
 var is_processing: bool = false
 
 func _init():
-	base_texture_path = "res://assets/modifier.svg"
+	base_texture_path = "res://assets/modifier.svg" # Пока используем ту же текстуру, потом можно заменить
 
 func can_receive_payload(payload: Payload = null) -> bool:
 	if not super(payload): return false
+
+	# Процессор принимает только сырье
+	if payload and payload.base_type != "RawMetal":
+		return false
+
 	return not is_processing and current_payload == null
 
 func receive_payload(payload: Payload):
@@ -34,8 +38,9 @@ func _reset_state():
 	is_processing = false
 
 func finish_processing():
-	if current_payload and modifier_data:
-		current_payload.apply_modifier(modifier_data)
+	if current_payload:
+		# Перерабатываем сырье в патроны
+		current_payload.base_type = "Ammo"
 
 	is_processing = false
 	var out_p = current_payload

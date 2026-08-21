@@ -7,6 +7,7 @@ extends Control
 var module_costs = {
 	"Miner": {"unlock": 0, "upgrade": 50},
 	"Conveyor": {"unlock": 0, "upgrade": 20},
+	"Processor": {"unlock": 0, "upgrade": 50},
 	"Weapon": {"unlock": 0, "upgrade": 100},
 	"Shotgun": {"unlock": 200, "upgrade": 150},
 	"Splitter": {"unlock": 100, "upgrade": 50},

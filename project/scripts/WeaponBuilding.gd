@@ -40,6 +40,15 @@ func setup_weapon(w_data: WeaponData, p_grid_pos: Vector2i):
 		add_child(ammo_label)
 		_update_ammo_label()
 
+func can_receive_payload(payload: Payload = null) -> bool:
+	if not super(payload): return false
+
+	# Пушки принимают ТОЛЬКО готовые патроны, а не сырье
+	if payload and payload.base_type != "Ammo":
+		return false
+
+	return true
+
 func receive_payload(payload: Payload):
 	# Если мы в режиме стройки, просто игнорируем случайные остаточные патроны
 	if not is_combat_active():

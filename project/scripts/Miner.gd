@@ -22,6 +22,7 @@ func _process(delta):
 		produce()
 
 func produce():
-	var p = Payload.new("Scrap", 10.0)
+	# Майнер добывает сырой металл, который еще нужно переработать
+	var p = Payload.new("RawMetal", 10.0)
 	# Emit out in the facing direction
 	on_payload_output.emit(p, facing_direction)

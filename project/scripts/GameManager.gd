@@ -97,18 +97,25 @@ func _on_ui_test_scenario():
 	# Очищаем сетку
 	grid_manager.clear_grid()
 
-	# Ставим 1 очень медленный Miner (1 патрон в 3 секунды)
+	# Ставим Майнер
 	grid_manager.set_selected_building("Miner")
 	grid_manager.attempt_build(Vector2i(3, 8))
 	var slow_miner = grid_manager.get_module_at(Vector2i(3, 8))
 	if slow_miner and slow_miner is Miner:
-		slow_miner.produce_time = 3.0
+		slow_miner.produce_time = 1.0
 		slow_miner.facing_direction = Vector2i.UP
 
-	# Ставим пушку, которая хочет стрелять 10 раз в секунду
-	grid_manager.set_selected_building("Weapon")
+	# Ставим Процессор
+	grid_manager.set_selected_building("Processor")
 	grid_manager.attempt_build(Vector2i(3, 7))
-	var fast_weapon = grid_manager.get_module_at(Vector2i(3, 7))
+	var proc = grid_manager.get_module_at(Vector2i(3, 7))
+	if proc and proc is ProcessorBuilding:
+		proc.facing_direction = Vector2i.UP
+
+	# Ставим Пушку
+	grid_manager.set_selected_building("Weapon")
+	grid_manager.attempt_build(Vector2i(3, 6))
+	var fast_weapon = grid_manager.get_module_at(Vector2i(3, 6))
 	if fast_weapon and fast_weapon is WeaponBuilding:
 		var fast_w_data = WeaponData.new()
 		fast_w_data.fire_rate = 10.0
@@ -123,7 +130,7 @@ func _on_ui_test_scenario():
 	# Снимаем выделение
 	grid_manager.set_selected_building("")
 
-	print("Test scenario setup complete. Slow Miner + Fast Weapon.")
+	print("Test scenario setup complete: Miner -> Processor -> Weapon.")
 
 func change_state(new_state: GameState):
 	current_state = new_state

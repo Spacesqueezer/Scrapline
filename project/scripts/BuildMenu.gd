@@ -13,7 +13,7 @@ signal on_building_selected(building_type: String)
 signal on_start_wave_pressed()
 signal on_test_scenario_pressed()
 
-var unlocked_buildings: Array[String] = ["Miner", "Conveyor", "Weapon"]
+var unlocked_buildings: Array[String] = ["Miner", "Conveyor", "Processor", "Weapon"]
 var building_buttons: Dictionary = {}
 
 func _ready():
@@ -38,6 +38,7 @@ func _ready():
 	# Connect build buttons (Mocking UI data for now)
 	_create_building_button("Miner")
 	_create_building_button("Conveyor")
+	_create_building_button("Processor")
 	_create_building_button("Weapon")
 	_create_building_button("Modifier")
 	_create_building_button("Shotgun")
