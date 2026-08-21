@@ -16,11 +16,17 @@ var base_texture_path: String = ""
 var max_hp: float = 50.0
 var hp: float = 50.0
 var is_destroyed: bool = false
+var hp_bar_node: Node2D
 
 func _ready():
 	if sprite == null:
 		sprite = Sprite2D.new()
 		add_child(sprite)
+
+	hp_bar_node = Node2D.new()
+	hp_bar_node.z_index = 20 # Гарантируем, что полоска будет поверх спрайта здания
+	add_child(hp_bar_node)
+	hp_bar_node.draw.connect(_on_hp_bar_draw)
 
 	if base_texture_path != "":
 		# Важно: Godot импортирует SVG как текстуры.
@@ -33,23 +39,32 @@ func _ready():
 	hp = max_hp
 
 func _draw():
+	pass
+
+func _on_hp_bar_draw():
+	# Поворачиваем Node отрисовки HP так, чтобы полоска всегда была горизонтальной,
+	# даже если само здание (через parent transform) или его спрайт повернуто.
+	# Поскольку мы вращаем sprite.rotation_degrees в rotate_building, сам узел Building не крутится.
+	# Но на всякий случай можно оставить как есть, главное, что offset_y достаточно большой.
+
 	if not is_destroyed and hp < max_hp and max_hp > 0:
 		var hp_ratio = clamp(hp / max_hp, 0.0, 1.0)
-		var bar_width = 40.0
-		var bar_height = 6.0
-		var offset_y = -40.0
+		var bar_width = 60.0
+		var bar_height = 8.0
+		var offset_y = -55.0 # Поднимаем выше здания
 
 		# Фон (Красный)
-		draw_rect(Rect2(-bar_width / 2.0, offset_y, bar_width, bar_height), Color.RED)
+		hp_bar_node.draw_rect(Rect2(-bar_width / 2.0, offset_y, bar_width, bar_height), Color.RED)
 		# Текущее HP (Зеленый)
-		draw_rect(Rect2(-bar_width / 2.0, offset_y, bar_width * hp_ratio, bar_height), Color.GREEN)
+		hp_bar_node.draw_rect(Rect2(-bar_width / 2.0, offset_y, bar_width * hp_ratio, bar_height), Color.GREEN)
 
 func take_damage(amount: float):
 	if is_destroyed:
 		return
 
 	hp -= amount
-	queue_redraw()
+	if hp_bar_node:
+		hp_bar_node.queue_redraw()
 	if hp <= 0:
 		hp = 0
 		is_destroyed = true
@@ -70,7 +85,8 @@ func _reset_state():
 func repair():
 	is_destroyed = false
 	hp = max_hp
-	queue_redraw()
+	if hp_bar_node:
+		hp_bar_node.queue_redraw()
 	if sprite:
 		sprite.modulate = Color.WHITE
 
