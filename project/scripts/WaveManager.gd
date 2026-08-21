@@ -1,15 +1,16 @@
+extends Node2D
 class_name WaveManager
-extends Node
 
-@onready var game_manager = get_node("/root/Main/GameManager")
-@onready var pool_manager = get_node("/root/Main/PoolManager")
-var is_wave_active: bool = false
 var enemies_to_spawn: int = 0
 var enemies_alive: int = 0
 var spawn_timer: float = 0.0
-var spawn_interval: float = 2.0
+var spawn_interval: float = 1.0
 
-var active_enemies: Array[Enemy] = []
+var active_enemies: Array[Node] = []
+var is_wave_active: bool = false
+
+@onready var pool_manager = get_node_or_null("/root/Main/PoolManager")
+@onready var game_manager = get_node_or_null("/root/Main/GameManager")
 
 func _ready():
 	print("WaveManager initialized.")
@@ -26,11 +27,11 @@ func start_wave(wave_num: int):
 		spawn_interval = 0.5
 	# Каждая 5-я волна — волна с боссом
 	elif wave_num > 0 and wave_num % 5 == 0:
-		enemies_to_spawn = 1
+		enemies_to_spawn = 1 + floor(wave_num / 10.0)
 		spawn_interval = 1.0 # Спавним его почти сразу
 	else:
-		enemies_to_spawn = 3 + wave_num * 2
-		spawn_interval = max(0.5, 2.0 - (wave_num * 0.2))
+		enemies_to_spawn = 3 + wave_num * 3
+		spawn_interval = max(0.2, 2.0 - (wave_num * 0.2))
 
 	enemies_alive = enemies_to_spawn
 	spawn_timer = 0.0
@@ -62,14 +63,17 @@ func spawn_enemy():
 
 	# Проверка на спавн босса
 	var is_boss_wave = false
-	if game_manager and game_manager.current_wave > 0 and game_manager.current_wave % 5 == 0 and not _force_test_wave:
-		is_boss_wave = true
+	var diff_mult = 1.0
+	if game_manager:
+		if game_manager.current_wave > 0 and game_manager.current_wave % 5 == 0 and not _force_test_wave:
+			is_boss_wave = true
+		diff_mult = 1.0 + (game_manager.current_wave * 0.5)
 
 	var enemy = null
 	if is_boss_wave:
 		enemy = BossEnemy.new()
 		add_child(enemy)
-		enemy.setup(Vector2(spawn_x, spawn_y), 500.0, 20.0, Vector2.DOWN)
+		enemy.setup(Vector2(spawn_x, spawn_y), 500.0 * diff_mult, 20.0 + (game_manager.current_wave * 2.0), Vector2.DOWN)
 	else:
 		if pool_manager:
 			enemy = pool_manager.get_enemy()
@@ -85,13 +89,13 @@ func spawn_enemy():
 
 		if e_type < 6:
 			# Basic Enemy
-			enemy.setup(Vector2(spawn_x, spawn_y), 50.0, 60.0, Vector2.DOWN)
+			enemy.setup(Vector2(spawn_x, spawn_y), 50.0 * diff_mult, 60.0, Vector2.DOWN)
 		elif e_type < 8:
 			# Swarm Enemy
-			enemy.setup(Vector2(spawn_x, spawn_y), 20.0, 120.0, Vector2.DOWN)
+			enemy.setup(Vector2(spawn_x, spawn_y), 20.0 * diff_mult, 120.0 + (game_manager.current_wave * 2.0), Vector2.DOWN)
 		else:
 			# Armored Enemy
-			enemy.setup(Vector2(spawn_x, spawn_y), 150.0, 30.0, Vector2.DOWN)
+			enemy.setup(Vector2(spawn_x, spawn_y), 150.0 * diff_mult, 30.0, Vector2.DOWN)
 
 	if not enemy.on_death.is_connected(_on_enemy_death):
 		enemy.on_death.connect(_on_enemy_death)
@@ -138,47 +142,26 @@ func get_closest_enemy_in_arc(pos: Vector2, max_range: float, face_dir: Vector2,
 	var half_arc = arc_rad / 2.0
 
 	for e in active_enemies:
-		if e.is_active:
-			var dist = e.global_position.distance_to(pos)
-			if dist <= max_range and dist < min_dist:
-				# Проверяем, находится ли враг внутри сектора обстрела
-				if arc_degrees >= 360.0:
+		if not e.is_active:
+			continue
+
+		var dist = pos.distance_to(e.global_position)
+		if dist <= max_range:
+			# Проверяем угол
+			var dir_to_enemy = (e.global_position - pos).normalized()
+			var angle_to_enemy = face_dir.angle_to(dir_to_enemy)
+
+			if abs(angle_to_enemy) <= half_arc:
+				if dist < min_dist:
 					min_dist = dist
 					closest = e
-				else:
-					var dir_to_enemy = (e.global_position - pos).normalized()
-					var angle_diff = face_dir.angle_to(dir_to_enemy)
-					if abs(angle_diff) <= half_arc:
-						min_dist = dist
-						closest = e
+
 	return closest
 
-func get_random_enemy_in_arc(pos: Vector2, max_range: float, face_dir: Vector2, arc_degrees: float) -> Node2D:
-	var valid_targets: Array[Node2D] = []
-	var arc_rad = deg_to_rad(arc_degrees)
-	var half_arc = arc_rad / 2.0
-
-	for e in active_enemies:
-		if e.is_active:
-			var dist = e.global_position.distance_to(pos)
-			if dist <= max_range:
-				if arc_degrees >= 360.0:
-					valid_targets.append(e)
-				else:
-					var dir_to_enemy = (e.global_position - pos).normalized()
-					var angle_diff = face_dir.angle_to(dir_to_enemy)
-					if abs(angle_diff) <= half_arc:
-						valid_targets.append(e)
-
-	if valid_targets.size() > 0:
-		return valid_targets[randi() % valid_targets.size()]
-	return null
-
+# Для обратной совместимости или пушек на 360 градусов
 func get_closest_enemy(pos: Vector2, max_range: float) -> Node2D:
-	return get_closest_enemy_in_arc(pos, max_range, Vector2.RIGHT, 360.0)
+	return get_closest_enemy_in_arc(pos, max_range, Vector2.UP, 360.0)
 
-# Трассировка луча для вычисления попадания (хендмейд raycast без физического движка)
-# Возвращает словарь: {"hit": bool, "target": Node2D (если попали), "point": Vector2 (куда долетел луч)}
 func raycast_enemy(start_pos: Vector2, direction: Vector2, max_range: float, hit_radius: float = 30.0) -> Dictionary:
 	var end_pos = start_pos + direction * max_range
 	var closest_target = null
@@ -200,21 +183,15 @@ func raycast_enemy(start_pos: Vector2, direction: Vector2, max_range: float, hit
 		var closest_point_on_ray = start_pos + direction * projection_length
 		var dist_to_ray = closest_point_on_ray.distance_to(e.global_position)
 
+		# Если расстояние меньше радиуса попадания (hitbox), считаем это попаданием
 		if dist_to_ray <= hit_radius:
 			if projection_length < closest_dist:
 				closest_dist = projection_length
 				closest_target = e
-
-	if closest_target != null:
-		return {
-			"hit": true,
-			"target": closest_target,
-			# Для визуализации берем точку на радиусе врага
-			"point": start_pos + direction * closest_dist
-		}
+				end_pos = closest_point_on_ray
 
 	return {
-		"hit": false,
-		"target": null,
+		"hit": closest_target != null,
+		"target": closest_target,
 		"point": end_pos
 	}

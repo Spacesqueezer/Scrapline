@@ -1,12 +1,14 @@
 extends Control
 
+var copy_btn: Button
+
 func _ready():
 	hide()
 	var restart_btn = $VBoxContainer/RestartButton
 	if restart_btn:
 		restart_btn.pressed.connect(_go_to_main_menu)
 
-	var copy_btn = $VBoxContainer/CopyStatsButton
+	copy_btn = $VBoxContainer/CopyStatsButton
 	if copy_btn:
 		copy_btn.pressed.connect(_on_copy_stats)
 
@@ -20,11 +22,14 @@ func _on_copy_stats():
 			file.store_string(report)
 			file.close()
 
-		var copy_btn = $VBoxContainer/CopyStatsButton
 		if copy_btn:
 			copy_btn.text = "Copied!"
 			var t = get_tree().create_timer(1.0)
-			t.timeout.connect(func(btn): if is_instance_valid(btn): btn.text = "Copy Stats Report").bind(copy_btn)
+			t.timeout.connect(_reset_copy_text)
+
+func _reset_copy_text():
+	if is_instance_valid(copy_btn):
+		copy_btn.text = "Copy Stats Report"
 
 func _go_to_main_menu():
 	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
