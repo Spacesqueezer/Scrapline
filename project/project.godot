@@ -20,6 +20,7 @@ config/icon="res://icon.svg"
 [autoload]
 
 SaveManager="*res://scripts/SaveManager.gd"
+StatTracker="*res://scripts/StatTracker.gd"
 
 [display]
 

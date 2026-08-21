@@ -128,6 +128,8 @@ func attempt_build(grid_pos: Vector2i):
 		if game_manager:
 			game_manager.current_energy -= cost
 			game_manager.energy_changed.emit(game_manager.current_energy, game_manager.max_energy)
+		if StatTracker:
+			StatTracker.track_building_placed(current_selected_building, cost)
 		place_module(grid_pos, new_building)
 
 func _draw():

@@ -41,6 +41,8 @@ func finish_processing():
 	if current_payload:
 		# Перерабатываем сырье в патроны
 		current_payload.base_type = "Ammo"
+		if StatTracker:
+			StatTracker.track_resource_produced("Ammo")
 
 	is_processing = false
 	var out_p = current_payload

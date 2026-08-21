@@ -11,6 +11,7 @@ signal on_death(enemy: Enemy)
 signal on_reach_base(enemy: Enemy)
 
 var sprite: Sprite2D
+var enemy_type_name: String = "Basic"
 
 func _ready():
 	sprite = Sprite2D.new()
@@ -40,10 +41,16 @@ func setup(start_pos: Vector2, p_hp: float, p_speed: float, dir: Vector2):
 	if sprite:
 		if max_hp > 100.0:
 			sprite.texture = load("res://assets/enemy_armored.svg")
+			enemy_type_name = "Armored"
 		elif speed > 80.0:
 			sprite.texture = load("res://assets/enemy_swarm.svg")
+			enemy_type_name = "Swarm"
 		else:
 			sprite.texture = load("res://assets/enemy_basic.svg")
+			enemy_type_name = "Basic"
+
+	if StatTracker:
+		StatTracker.track_enemy_spawn(enemy_type_name)
 
 	show()
 	queue_redraw()
@@ -137,6 +144,8 @@ func take_damage(amount: float, tags: Array[String]):
 func die():
 	is_active = false
 	hide()
+	if StatTracker:
+		StatTracker.track_enemy_kill(enemy_type_name)
 	on_death.emit(self)
 
 func reach_base():

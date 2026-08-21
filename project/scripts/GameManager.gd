@@ -32,6 +32,8 @@ signal energy_changed(current: int, max: int)
 
 func _ready():
 	print("GameManager initialized.")
+	if StatTracker:
+		StatTracker.start_run()
 
 	# Connect UI Signals if possible
 	if build_menu:

@@ -12,7 +12,22 @@ func _ready():
 	hp = max_hp
 
 # Ядро ничего не производит и не передает (пока), только питает фабрику и выступает целью
-func can_receive_payload() -> bool:
+func take_damage(amount: float):
+	if is_destroyed:
+		return
+
+	hp -= amount
+	if StatTracker:
+		StatTracker.track_damage_taken(amount, true)
+
+	if hp_bar_node:
+		hp_bar_node.queue_redraw()
+	if hp <= 0:
+		hp = 0
+		is_destroyed = true
+		on_destroyed()
+
+func can_receive_payload(payload: Payload = null) -> bool:
 	return false
 
 func receive_payload(payload: Payload):

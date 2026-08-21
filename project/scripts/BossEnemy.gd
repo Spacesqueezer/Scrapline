@@ -12,6 +12,7 @@ func _init():
 	attack_range = 80.0
 
 func _ready():
+	enemy_type_name = "Boss"
 	super._ready()
 	if sprite:
 		# Сделаем босса больше и зададим цвет или текстуру

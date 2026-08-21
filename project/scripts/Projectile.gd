@@ -54,6 +54,8 @@ func setup(p_start_pos: Vector2, p_target, p_payload: Payload, hit_point: Vector
 	# Хитскан: наносим урон мгновенно, если попали
 	if p_target and is_instance_valid(p_target) and p_target.has_method("take_damage"):
 		p_target.take_damage(payload.base_damage, payload.tags)
+		if StatTracker:
+			StatTracker.track_damage_dealt(payload.base_damage)
 
 	queue_redraw()
 

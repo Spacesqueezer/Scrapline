@@ -85,6 +85,9 @@ func take_damage(amount: float):
 		return
 
 	hp -= amount
+	if StatTracker:
+		StatTracker.track_damage_taken(amount, false)
+
 	if hp_bar_node:
 		hp_bar_node.queue_redraw()
 	if hp <= 0:

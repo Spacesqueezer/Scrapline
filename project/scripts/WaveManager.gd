@@ -18,6 +18,9 @@ var _force_test_wave: bool = false
 
 func start_wave(wave_num: int):
 	is_wave_active = true
+	if StatTracker:
+		StatTracker.update_wave(wave_num)
+
 	if _force_test_wave:
 		enemies_to_spawn = 20
 		spawn_interval = 0.5

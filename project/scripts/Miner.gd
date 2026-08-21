@@ -24,5 +24,7 @@ func _process(delta):
 func produce():
 	# Майнер добывает сырой металл, который еще нужно переработать
 	var p = Payload.new("RawMetal", 10.0)
+	if StatTracker:
+		StatTracker.track_resource_produced("RawMetal")
 	# Emit out in the facing direction
 	on_payload_output.emit(p, facing_direction)
