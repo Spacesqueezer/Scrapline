@@ -10,12 +10,13 @@ enum GameState {
 
 var current_state: GameState = GameState.BUILD
 var current_wave: int = 0
-var base_hp: int = 100
+var max_energy: int = 50
+var current_energy: int = 50
 
 # Signals
 signal state_changed(new_state: GameState)
 signal wave_started(wave_num: int)
-signal base_damaged(amount: int, current_hp: int)
+signal energy_changed(current: int, max: int)
 
 @onready var wave_manager = $"../WaveManager"
 @onready var grid_manager = $"../World2D/GridManager"
@@ -37,7 +38,7 @@ func _ready():
 			build_menu.update_state_label(state_name)
 		)
 		wave_started.connect(func(w): build_menu.update_wave_label(w))
-		base_damaged.connect(func(amt, hp): build_menu.update_base_hp(hp))
+		energy_changed.connect(func(c, m): build_menu.update_energy(c, m))
 
 	if reward_menu:
 		reward_menu.on_reward_selected.connect(_on_reward_selected)
@@ -109,6 +110,11 @@ func change_state(new_state: GameState):
 	match current_state:
 		GameState.BUILD:
 			print("Phase: BUILD")
+			if grid_manager:
+				for key in grid_manager.grid.keys():
+					var building = grid_manager.grid[key] as Building
+					if building and building.has_method("repair"):
+						building.repair()
 		GameState.COMBAT:
 			print("Phase: COMBAT")
 			start_wave()
@@ -135,11 +141,10 @@ func start_wave():
 	if wave_manager:
 		wave_manager.start_wave(current_wave)
 
+# Больше не используется (враги теперь атакуют Ядро напрямую в Enemy.gd)
+# Оставлено для обратной совместимости, если понадобится
 func damage_base(amount: int):
-	base_hp -= amount
-	base_damaged.emit(amount, base_hp)
-	if base_hp <= 0:
-		change_state(GameState.GAME_OVER)
+	pass
 
 func get_closest_enemy(pos: Vector2, max_range: float) -> Node2D:
 	if wave_manager:

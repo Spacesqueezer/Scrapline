@@ -28,6 +28,10 @@ func _process(delta):
 		if timer >= processing_time:
 			finish_processing()
 
+func _reset_state():
+	current_payload = null
+	is_processing = false
+
 func finish_processing():
 	if current_payload and modifier_data:
 		current_payload.apply_modifier(modifier_data)

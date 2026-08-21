@@ -73,5 +73,5 @@ func update_state_label(state_name: String):
 func update_wave_label(wave: int):
 	wave_label.text = "Wave: " + str(wave)
 
-func update_base_hp(hp: int):
-	base_hp_label.text = "Base HP: " + str(hp)
+func update_energy(current: int, max: int):
+	base_hp_label.text = "Energy: " + str(current) + " / " + str(max)

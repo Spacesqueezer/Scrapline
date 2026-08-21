@@ -10,11 +10,23 @@ var grid: Dictionary = {}
 var current_selected_building: String = ""
 var can_build: bool = true
 
+var core_building: CoreBuilding
+
 @onready var pool_manager = get_node("/root/Main/PoolManager")
+@onready var game_manager = get_node("/root/Main/GameManager")
 
 func _ready():
 	print("GridManager initialized. Size: ", grid_size)
 	queue_redraw()
+	# Размещаем Ядро на старте (посередине внизу)
+	_place_core()
+
+func _place_core():
+	core_building = CoreBuilding.new()
+	var md = ModuleData.new()
+	core_building.setup(md, Vector2i(grid_size.x / 2, grid_size.y - 1))
+	core_building.facing_direction = Vector2i.UP
+	place_module(core_building.grid_position, core_building)
 
 func set_selected_building(building_type: String):
 	current_selected_building = building_type
@@ -52,6 +64,11 @@ func attempt_build(grid_pos: Vector2i):
 		return
 
 	var new_building: Building = null
+	var cost = 10 # Хардкодим стоимость для MVP (можно брать из ModuleData потом)
+
+	if game_manager and game_manager.current_energy < cost:
+		print("Not enough energy!")
+		return
 	match current_selected_building:
 		"Miner":
 			new_building = Miner.new()
@@ -97,6 +114,9 @@ func attempt_build(grid_pos: Vector2i):
 			new_building.facing_direction = Vector2i.UP
 
 	if new_building:
+		if game_manager:
+			game_manager.current_energy -= cost
+			game_manager.energy_changed.emit(game_manager.current_energy, game_manager.max_energy)
 		place_module(grid_pos, new_building)
 
 func _draw():
@@ -160,12 +180,23 @@ func _on_weapon_fire(payload: Payload, start_pos: Vector2, target: Node2D):
 func remove_module(grid_pos: Vector2i):
 	if grid.has(grid_pos):
 		var module = grid[grid_pos]
+		if module is CoreBuilding:
+			print("Cannot delete Core Building!")
+			return
+
+		# Восстанавливаем энергию
+		if module is Building and module.data and game_manager:
+			game_manager.current_energy += module.data.energy_cost
+			game_manager.energy_changed.emit(game_manager.current_energy, game_manager.max_energy)
+
 		grid.erase(grid_pos)
 		module.queue_free()
 
 func clear_grid():
 	var keys = grid.keys()
 	for key in keys:
+		if grid[key] is CoreBuilding:
+			continue
 		remove_module(key)
 
 ## Gets the module at a specific position, returns null if empty

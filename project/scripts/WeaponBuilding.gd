@@ -98,6 +98,10 @@ func _update_ammo_label():
 	if ammo_label:
 		ammo_label.text = str(ammo_queue.size())
 
+func _reset_state():
+	ammo_queue.clear()
+	_update_ammo_label()
+
 func _draw():
 	# Отрисовываем сектор обстрела (если он меньше 360)
 	if weapon_data and weapon_data.firing_arc < 360.0:

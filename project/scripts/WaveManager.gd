@@ -95,8 +95,12 @@ func _on_enemy_death(enemy: Enemy):
 func _on_enemy_reach_base(enemy: Enemy):
 	active_enemies.erase(enemy)
 	enemies_alive -= 1
-	if game_manager:
-		game_manager.damage_base(10)
+
+	# Наносим урон Ядру за пропущенного врага (штраф)
+	var grid_manager = get_node_or_null("/root/Main/World2D/GridManager")
+	if grid_manager and grid_manager.core_building:
+		grid_manager.core_building.take_damage(10)
+
 	check_wave_end()
 	if not pool_manager:
 		enemy.queue_free()

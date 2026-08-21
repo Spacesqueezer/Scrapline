@@ -48,13 +48,41 @@ func setup(start_pos: Vector2, p_hp: float, p_speed: float, dir: Vector2):
 	show()
 	queue_redraw()
 
+var attack_timer: float = 0.0
+var attack_rate: float = 1.0
+var attack_damage: float = 10.0
+var target_building: Building = null
+
 func _process(delta):
 	if not is_active:
 		return
 
+	# Если есть живая цель перед нами - останавливаемся и бьем
+	if target_building and not target_building.is_destroyed:
+		attack_timer += delta
+		if attack_timer >= attack_rate:
+			attack_timer = 0.0
+			target_building.take_damage(attack_damage)
+			# Небольшая визуальная обратная связь атаки врага
+			global_position.y += 5
+			var t = get_tree().create_timer(0.1)
+			t.timeout.connect(func(): global_position.y -= 5)
+		return
+	else:
+		target_building = null
+
+	# Иначе движемся дальше
 	global_position += move_direction * speed * delta
 
-	# Проверка достижения базы (враг ушел за нижний край экрана, например Y > 1100)
+	# Проверка столкновения со зданиями
+	var grid_manager = get_node_or_null("/root/Main/World2D/GridManager")
+	if grid_manager:
+		var grid_pos = grid_manager.world_to_grid(global_position + Vector2(0, 30)) # Немного впереди врага
+		var b = grid_manager.get_module_at(grid_pos)
+		if b is Building and not b.is_destroyed:
+			target_building = b
+
+	# Если враг ушел за нижний край экрана (дошел до Ядра или прошел мимо)
 	if global_position.y > 1100:
 		reach_base()
 

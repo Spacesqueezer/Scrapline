@@ -28,6 +28,10 @@ func _process(delta):
 		if timer >= processing_time:
 			try_finish_processing()
 
+func _reset_state():
+	current_payload = null
+	is_processing = false
+
 func try_finish_processing():
 	# Получаем ссылки на соседей через GridManager
 	var gm = get_node_or_null("/root/Main/World2D/GridManager")

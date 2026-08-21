@@ -13,6 +13,10 @@ signal on_payload_output(payload: Payload, direction: Vector2i)
 var sprite: Sprite2D
 var base_texture_path: String = ""
 
+var max_hp: float = 50.0
+var hp: float = 50.0
+var is_destroyed: bool = false
+
 func _ready():
 	if sprite == null:
 		sprite = Sprite2D.new()
@@ -26,11 +30,44 @@ func _ready():
 		sprite.texture = tex
 		sprite.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
 
+	hp = max_hp
+
+func take_damage(amount: float):
+	if is_destroyed:
+		return
+
+	hp -= amount
+	if hp <= 0:
+		hp = 0
+		is_destroyed = true
+		on_destroyed()
+
+func on_destroyed():
+	# Визуально "выключаем" здание
+	if sprite:
+		sprite.modulate = Color(0.3, 0.3, 0.3, 0.5)
+
+	# Вызываем виртуальный метод для сброса состояния (ресурсы, патроны и т.д.) у наследников
+	_reset_state()
+
+# Виртуальный метод, который переопределяют дочерние классы (для сброса состояния при смерти)
+func _reset_state():
+	pass
+
+func repair():
+	is_destroyed = false
+	hp = max_hp
+	if sprite:
+		sprite.modulate = Color.WHITE
+
 func setup(p_data: ModuleData, p_grid_pos: Vector2i):
 	data = p_data
 	grid_position = p_grid_pos
 
 func can_receive_payload() -> bool:
+	# Если здание уничтожено, оно ничего не принимает
+	if is_destroyed:
+		return false
 	# Base class defaults to true. Subclasses like Modifier or Conveyor should override.
 	return true
 
@@ -40,6 +77,8 @@ func receive_payload(payload: Payload):
 
 # Проверка, идет ли сейчас бой, чтобы здания не работали в режиме стройки
 func is_combat_active() -> bool:
+	if is_destroyed:
+		return false
 	var gm = get_node_or_null("/root/Main/GameManager")
 	if gm and gm.current_state == GameManager.GameState.COMBAT:
 		return true
