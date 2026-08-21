@@ -26,20 +26,30 @@ func _process(delta):
 	if t >= 1.0:
 		is_active = false
 		hide()
-		# Return to pool or just queue_free for simplicity in MVP
 		queue_free()
 	else:
 		global_position = start_pos.lerp(end_pos, t)
+		# Update visual position
+		queue_redraw()
 
 func _draw():
 	if not payload:
 		return
 
-	var size = 6.0
+	var size = 8.0
 	var color = Color.GRAY
 
 	if "Fire" in payload.tags or "Explosive" in payload.tags:
 		color = Color.RED
-		size = 10.0
+	elif "Pierce" in payload.tags:
+		color = Color.CYAN
 
-	draw_rect(Rect2(-size/2, -size/2, size, size), color, true)
+	if payload.base_type == "RawMetal":
+		# Рисуем кружок для сырого металла (руды)
+		draw_circle(Vector2.ZERO, size, Color(0.6, 0.5, 0.4)) # Коричневатый/серый цвет руды
+	elif payload.base_type == "Ammo":
+		# Рисуем прямоугольник/пулю для патрона
+		draw_rect(Rect2(-size/2, -size, size, size*2), color, true)
+	else:
+		# По умолчанию
+		draw_rect(Rect2(-size/2, -size/2, size, size), color, true)

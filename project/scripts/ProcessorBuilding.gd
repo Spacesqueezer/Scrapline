@@ -9,7 +9,7 @@ var input_queue: Array[Payload] = []
 var max_queue: int = 5
 
 func _init():
-	base_texture_path = "res://assets/modifier.svg"
+	base_texture_path = "res://assets/processor.svg"
 
 func can_receive_payload(payload: Payload = null) -> bool:
 	if not super(payload): return false
