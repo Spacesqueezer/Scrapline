@@ -107,6 +107,37 @@ func attempt_build(grid_pos: Vector2i):
 			new_building.setup_weapon(w_data, grid_pos)
 			new_building.facing_direction = Vector2i.UP
 			new_building.on_fire.connect(_on_weapon_fire)
+		"Sniper":
+			new_building = SniperBuilding.new()
+			var w_data = WeaponData.new()
+			var lvl = SaveManager.get_module_level("Sniper") if SaveManager else 1
+			w_data.fire_rate = 0.5
+			w_data.range = 800.0
+			w_data.base_damage = 50.0 * (1.0 + (lvl - 1) * 0.2)
+			new_building.setup_weapon(w_data, grid_pos)
+			new_building.facing_direction = Vector2i.UP
+			new_building.on_fire.connect(_on_weapon_fire)
+		"Flamethrower":
+			new_building = FlamethrowerBuilding.new()
+			var w_data = WeaponData.new()
+			var lvl = SaveManager.get_module_level("Flamethrower") if SaveManager else 1
+			w_data.fire_rate = 5.0
+			w_data.range = 200.0
+			w_data.firing_arc = 60.0
+			w_data.base_damage = 5.0 * (1.0 + (lvl - 1) * 0.15)
+			new_building.setup_weapon(w_data, grid_pos)
+			new_building.facing_direction = Vector2i.UP
+			new_building.on_fire.connect(_on_weapon_fire)
+		"Tesla":
+			new_building = TeslaBuilding.new()
+			var w_data = WeaponData.new()
+			var lvl = SaveManager.get_module_level("Tesla") if SaveManager else 1
+			w_data.fire_rate = 1.5
+			w_data.range = 350.0
+			w_data.base_damage = 15.0 * (1.0 + (lvl - 1) * 0.2)
+			new_building.setup_weapon(w_data, grid_pos)
+			new_building.facing_direction = Vector2i.UP
+			new_building.on_fire.connect(_on_weapon_fire)
 		"Shotgun":
 			new_building = WeaponBuilding.new()
 			var w_data = WeaponData.new()

@@ -39,7 +39,10 @@ func setup(start_pos: Vector2, p_hp: float, p_speed: float, dir: Vector2):
 	is_active = true
 
 	if sprite:
-		if max_hp > 100.0:
+		if enemy_type_name == "Boss":
+			# Босс настраивается в своем классе
+			pass
+		elif max_hp > 100.0:
 			sprite.texture = load("res://assets/enemy_armored.svg")
 			enemy_type_name = "Armored"
 		elif speed > 80.0:

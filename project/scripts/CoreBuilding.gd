@@ -13,6 +13,7 @@ func _ready():
 
 # Ядро ничего не производит и не передает (пока), только питает фабрику и выступает целью
 func take_damage(amount: float):
+	print("Core taking damage! amount: ", amount, ", current hp: ", hp)
 	if is_destroyed:
 		return
 
@@ -37,4 +38,5 @@ func on_destroyed():
 	# Если ядро уничтожено - игра окончена
 	var gm = get_node_or_null("/root/Main/GameManager")
 	if gm:
+		print("GAME OVER TRIGGERED")
 		gm.change_state(gm.GameState.GAME_OVER)

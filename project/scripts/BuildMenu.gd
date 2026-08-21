@@ -42,6 +42,9 @@ func _ready():
 	_create_building_button("Weapon")
 	_create_building_button("Modifier")
 	_create_building_button("Shotgun")
+	_create_building_button("Sniper")
+	_create_building_button("Flamethrower")
+	_create_building_button("Tesla")
 	_create_building_button("Splitter")
 
 	var btn_delete = Button.new()

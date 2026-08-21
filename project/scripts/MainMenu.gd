@@ -10,6 +10,9 @@ var module_costs = {
 	"Processor": {"unlock": 0, "upgrade": 50},
 	"Weapon": {"unlock": 0, "upgrade": 100},
 	"Shotgun": {"unlock": 200, "upgrade": 150},
+	"Sniper": {"unlock": 300, "upgrade": 200},
+	"Flamethrower": {"unlock": 250, "upgrade": 150},
+	"Tesla": {"unlock": 400, "upgrade": 250},
 	"Splitter": {"unlock": 100, "upgrade": 50},
 	"Modifier": {"unlock": 150, "upgrade": 100}
 }
