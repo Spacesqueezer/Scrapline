@@ -17,10 +17,13 @@ var unlocked_buildings: Array[String] = ["Miner", "Conveyor", "Weapon"]
 var building_buttons: Dictionary = {}
 
 func _ready():
-	# Если есть сохранения, берем разблокированные модули оттуда
-	if SaveManager and SaveManager.save_data.has("unlocked_modules"):
-		# В Godot 4 массивы из JSON нетипизированы (Array), поэтому используем .assign() для Array[String]
-		unlocked_buildings.assign(SaveManager.save_data["unlocked_modules"])
+	# Если есть сохранения, парсим разблокированные модули из новой структуры словаря
+	if SaveManager and SaveManager.save_data.has("modules"):
+		unlocked_buildings.clear()
+		var mods = SaveManager.save_data["modules"]
+		for m_name in mods.keys():
+			if mods[m_name].has("unlocked") and mods[m_name]["unlocked"]:
+				unlocked_buildings.append(m_name)
 
 	# Ensure the UI doesn't block grid clicks where it's transparent
 	mouse_filter = Control.MOUSE_FILTER_IGNORE

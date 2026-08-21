@@ -5,7 +5,15 @@ const SAVE_PATH = "user://save_data.json"
 var save_data = {
 	"total_scrap": 0,
 	"max_wave_reached": 0,
-	"unlocked_modules": ["Miner", "Conveyor", "Weapon"]
+	# Изменяем структуру на словарь для поддержки уровней улучшений
+	"modules": {
+		"Miner": {"unlocked": true, "level": 1},
+		"Conveyor": {"unlocked": true, "level": 1},
+		"Weapon": {"unlocked": true, "level": 1},
+		"Shotgun": {"unlocked": false, "level": 0},
+		"Splitter": {"unlocked": false, "level": 0},
+		"Modifier": {"unlocked": false, "level": 0}
+	}
 }
 
 func _ready():
@@ -53,3 +61,34 @@ func update_max_wave(wave: int):
 	if wave > save_data["max_wave_reached"]:
 		save_data["max_wave_reached"] = wave
 		save_to_disk()
+
+# Новые методы для управления Мета-магазином
+func is_module_unlocked(module_name: String) -> bool:
+	if save_data["modules"].has(module_name):
+		return save_data["modules"][module_name]["unlocked"]
+	return false
+
+func get_module_level(module_name: String) -> int:
+	if save_data["modules"].has(module_name):
+		return save_data["modules"][module_name]["level"]
+	return 0
+
+func unlock_module(module_name: String, cost: int) -> bool:
+	if save_data["total_scrap"] >= cost and not is_module_unlocked(module_name):
+		save_data["total_scrap"] -= cost
+		if not save_data["modules"].has(module_name):
+			save_data["modules"][module_name] = {"unlocked": true, "level": 1}
+		else:
+			save_data["modules"][module_name]["unlocked"] = true
+			save_data["modules"][module_name]["level"] = 1
+		save_to_disk()
+		return true
+	return false
+
+func upgrade_module(module_name: String, cost: int) -> bool:
+	if save_data["total_scrap"] >= cost and is_module_unlocked(module_name):
+		save_data["total_scrap"] -= cost
+		save_data["modules"][module_name]["level"] += 1
+		save_to_disk()
+		return true
+	return false

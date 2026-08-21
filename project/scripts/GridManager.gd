@@ -92,7 +92,8 @@ func attempt_build(grid_pos: Vector2i):
 		"Weapon":
 			new_building = WeaponBuilding.new()
 			var w_data = WeaponData.new()
-			w_data.fire_rate = 2.0
+			var lvl = SaveManager.get_module_level("Weapon") if SaveManager else 1
+			w_data.fire_rate = 2.0 * (1.0 + (lvl - 1) * 0.1) # +10% скорострельности за уровень
 			w_data.range = 500.0
 			new_building.setup_weapon(w_data, grid_pos)
 			new_building.facing_direction = Vector2i.UP
@@ -100,10 +101,11 @@ func attempt_build(grid_pos: Vector2i):
 		"Shotgun":
 			new_building = WeaponBuilding.new()
 			var w_data = WeaponData.new()
+			var lvl = SaveManager.get_module_level("Shotgun") if SaveManager else 1
 			w_data.fire_rate = 1.0
 			w_data.range = 250.0
-			w_data.firing_arc = 90.0
-			w_data.projectiles_per_shot = 3
+			w_data.firing_arc = 30.0 # Сужаем конус до 30 градусов
+			w_data.projectiles_per_shot = 3 + (lvl - 1) # +1 пуля за каждый уровень
 			new_building.setup_weapon(w_data, grid_pos)
 			new_building.facing_direction = Vector2i.UP
 			new_building.on_fire.connect(_on_weapon_fire)

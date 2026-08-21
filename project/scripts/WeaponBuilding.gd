@@ -55,7 +55,13 @@ func _process(delta):
 
 	if not can_fire:
 		timer += delta
-		if weapon_data and timer >= (1.0 / weapon_data.fire_rate):
+
+		var current_fire_rate = weapon_data.fire_rate if weapon_data else 1.0
+		var gm = get_node_or_null("/root/Main/GameManager")
+		if gm and gm.run_modifiers.has("fire_rate_multiplier"):
+			current_fire_rate *= gm.run_modifiers["fire_rate_multiplier"]
+
+		if current_fire_rate > 0 and timer >= (1.0 / current_fire_rate):
 			can_fire = true
 			timer = 0.0
 
@@ -105,7 +111,21 @@ func fire(target: Node2D):
 				current_target = null
 				hit_point = raycast_result["point"]
 
-		on_fire.emit(payload_to_fire, global_position, current_target, hit_point)
+		# Применяем ин-ран баффы урона и пробития к Payload перед выстрелом
+		var gm = get_node_or_null("/root/Main/GameManager")
+		var p_clone = Payload.new(payload_to_fire.base_type, payload_to_fire.base_damage)
+		p_clone.tags = payload_to_fire.tags.duplicate()
+
+		if gm:
+			if gm.run_modifiers.has("dmg_multiplier"):
+				p_clone.base_damage *= gm.run_modifiers["dmg_multiplier"]
+
+			if gm.run_modifiers.has("pierce_chance") and gm.run_modifiers["pierce_chance"] > 0:
+				if randf() <= gm.run_modifiers["pierce_chance"]:
+					if "Pierce" not in p_clone.tags:
+						p_clone.tags.append("Pierce")
+
+		on_fire.emit(p_clone, global_position, current_target, hit_point)
 
 	_update_ammo_label()
 

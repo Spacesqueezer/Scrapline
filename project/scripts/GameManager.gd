@@ -13,6 +13,13 @@ var current_wave: int = 0
 var max_energy: int = 50
 var current_energy: int = 50
 
+# Ин-ран баффы (Roguelite модификаторы, действующие до Game Over)
+var run_modifiers: Dictionary = {
+	"dmg_multiplier": 1.0,
+	"fire_rate_multiplier": 1.0,
+	"pierce_chance": 0.0
+}
+
 # Signals
 signal state_changed(new_state: GameState)
 signal wave_started(wave_num: int)
@@ -57,13 +64,31 @@ func _on_ui_building_selected(b_type: String):
 func _on_reward_selected(reward_id: String):
 	print("Player selected reward: ", reward_id)
 
-	if reward_id != "None" and build_menu:
-		build_menu.unlock_building(reward_id)
+	if reward_id != "None":
+		apply_run_modifier(reward_id)
 
 	if reward_menu:
 		reward_menu.hide()
 
 	change_state(GameState.BUILD)
+
+func apply_run_modifier(reward_id: String):
+	match reward_id:
+		"dmg_up":
+			run_modifiers["dmg_multiplier"] += 0.2
+			print("Run Modifier: Damage +20%. Total Multiplier: ", run_modifiers["dmg_multiplier"])
+		"fire_rate_up":
+			run_modifiers["fire_rate_multiplier"] += 0.15
+			print("Run Modifier: Fire Rate +15%. Total Multiplier: ", run_modifiers["fire_rate_multiplier"])
+		"pierce_chance":
+			run_modifiers["pierce_chance"] += 0.10
+			print("Run Modifier: Pierce Chance +10%. Total: ", run_modifiers["pierce_chance"])
+		"core_hp":
+			if grid_manager and grid_manager.core_building:
+				grid_manager.core_building.max_hp += 50
+				grid_manager.core_building.hp += 50
+				grid_manager.core_building.queue_redraw()
+				print("Run Modifier: Core HP +50. New Max: ", grid_manager.core_building.max_hp)
 
 func _on_ui_test_scenario():
 	if current_state != GameState.BUILD or not grid_manager:

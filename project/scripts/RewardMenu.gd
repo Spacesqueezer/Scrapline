@@ -10,11 +10,12 @@ signal on_reward_selected(reward_id: String)
 
 var current_options: Array[String] = []
 
-# Полный список возможных наград-зданий (то, что не дается на старте)
-var possible_rewards: Array[String] = [
-	"Modifier",
-	"Splitter",
-	"Shotgun"
+# Список локальных баффов (Roguelite-элементы на 1 забег)
+var possible_rewards: Array[Dictionary] = [
+	{"id": "dmg_up", "text": "+20% Damage"},
+	{"id": "fire_rate_up", "text": "+15% Fire Rate"},
+	{"id": "core_hp", "text": "+50 Core HP"},
+	{"id": "pierce_chance", "text": "10% Pierce Chance"}
 ]
 
 func _ready():
@@ -27,39 +28,40 @@ func _ready():
 func generate_and_show_draft(unlocked_buildings: Array[String] = []):
 	current_options.clear()
 
-	# Фильтруем возможные награды, оставляя только те, которых еще нет в unlocked_buildings
-	var filtered_rewards = []
-	for reward in possible_rewards:
-		if reward not in unlocked_buildings:
-			filtered_rewards.append(reward)
+	# Перемешиваем баффы
+	var shuffled_rewards = possible_rewards.duplicate()
+	shuffled_rewards.shuffle()
 
-	# Перемешиваем
-	filtered_rewards.shuffle()
-
-	# Берем до 3 уникальных карточек
-	for i in range(min(3, filtered_rewards.size())):
-		current_options.append(filtered_rewards[i])
+	# Берем до 3 уникальных карточек баффов
+	for i in range(min(3, shuffled_rewards.size())):
+		current_options.append(shuffled_rewards[i]["id"])
 
 	# Настраиваем UI кнопок
 	if current_options.size() > 0:
-		card1.text = "Unlock: " + current_options[0]
+		card1.text = _get_reward_text(current_options[0])
 		card1.show()
 	else:
 		card1.hide()
 
 	if current_options.size() > 1:
-		card2.text = "Unlock: " + current_options[1]
+		card2.text = _get_reward_text(current_options[1])
 		card2.show()
 	else:
 		card2.hide()
 
 	if current_options.size() > 2:
-		card3.text = "Unlock: " + current_options[2]
+		card3.text = _get_reward_text(current_options[2])
 		card3.show()
 	else:
 		card3.hide()
 
 	show()
+
+func _get_reward_text(id: String) -> String:
+	for r in possible_rewards:
+		if r["id"] == id:
+			return r["text"]
+	return "Unknown Buff"
 
 func _select_reward(index: int):
 	if index < current_options.size():
