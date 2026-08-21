@@ -1,4 +1,4 @@
-extends Node2D
+extends Node
 class_name WaveManager
 
 var enemies_to_spawn: int = 0
