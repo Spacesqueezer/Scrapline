@@ -24,7 +24,7 @@ func _on_copy_stats():
 		if copy_btn:
 			copy_btn.text = "Copied!"
 			var t = get_tree().create_timer(1.0)
-			t.timeout.connect(func(): copy_btn.text = "Copy Stats Report")
+			t.timeout.connect(func(btn): if is_instance_valid(btn): btn.text = "Copy Stats Report").bind(copy_btn)
 
 func _go_to_main_menu():
 	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
