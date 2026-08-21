@@ -19,7 +19,8 @@ var building_buttons: Dictionary = {}
 func _ready():
 	# Если есть сохранения, берем разблокированные модули оттуда
 	if SaveManager and SaveManager.save_data.has("unlocked_modules"):
-		unlocked_buildings = SaveManager.save_data["unlocked_modules"]
+		# В Godot 4 массивы из JSON нетипизированы (Array), поэтому используем .assign() для Array[String]
+		unlocked_buildings.assign(SaveManager.save_data["unlocked_modules"])
 
 	# Ensure the UI doesn't block grid clicks where it's transparent
 	mouse_filter = Control.MOUSE_FILTER_IGNORE

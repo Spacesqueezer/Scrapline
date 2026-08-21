@@ -14,7 +14,7 @@ func _ready():
 func load_data():
 	if not FileAccess.file_exists(SAVE_PATH):
 		print("No save file found. Creating new save data.")
-		save_data()
+		save_to_disk()
 		return
 
 	var file = FileAccess.open(SAVE_PATH, FileAccess.READ)
@@ -35,7 +35,7 @@ func load_data():
 			print("JSON Parse Error: ", json.get_error_message())
 		file.close()
 
-func save_data():
+func save_to_disk():
 	var file = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file:
 		var json_string = JSON.stringify(save_data)
@@ -47,9 +47,9 @@ func save_data():
 
 func add_scrap(amount: int):
 	save_data["total_scrap"] += amount
-	save_data()
+	save_to_disk()
 
 func update_max_wave(wave: int):
 	if wave > save_data["max_wave_reached"]:
 		save_data["max_wave_reached"] = wave
-		save_data()
+		save_to_disk()
