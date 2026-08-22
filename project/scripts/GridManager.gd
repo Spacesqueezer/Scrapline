@@ -6,6 +6,8 @@ var cell_size: int = 100
 
 # Dictionary to map Vector2i grid coordinates to Module Nodes
 var grid: Dictionary = {}
+# Array to store coordinates of Ore Veins
+var ore_veins: Array[Vector2i] = []
 
 var current_selected_building: String = ""
 var can_build: bool = true
@@ -17,14 +19,32 @@ var core_building: CoreBuilding
 
 func _ready():
 	print("GridManager initialized. Size: ", grid_size)
+	_generate_ore_veins()
 	queue_redraw()
 	# Размещаем Ядро на старте (посередине внизу)
 	_place_core()
 
+func _generate_ore_veins():
+	ore_veins.clear()
+	var vein_count = 5 # Количество жил на уровне
+	# Исключаем нижний ряд (возле ядра)
+	for i in range(vein_count):
+		var rx = randi() % grid_size.x
+		var ry = randi() % (grid_size.y - 2) # Выше нижних 2 рядов
+		var pos = Vector2i(rx, ry)
+		if pos not in ore_veins:
+			ore_veins.append(pos)
+
 func _place_core():
 	core_building = CoreBuilding.new()
 	var md = ModuleData.new()
-	core_building.setup(md, Vector2i(grid_size.x / 2, grid_size.y - 1))
+	var core_pos = Vector2i(grid_size.x / 2, grid_size.y - 1)
+
+	# Убедимся, что под ядром нет руды
+	if core_pos in ore_veins:
+		ore_veins.erase(core_pos)
+
+	core_building.setup(md, core_pos)
 	core_building.facing_direction = Vector2i.UP
 	place_module(core_building.grid_position, core_building)
 
@@ -58,17 +78,39 @@ func rotate_module(grid_pos: Vector2i):
 		if module:
 			module.rotate_building()
 
+func get_building_cost(type: String) -> int:
+	match type:
+		"Conveyor": return 2
+		"Miner": return 15
+		"Processor": return 20
+		"Modifier": return 25
+		"Weapon", "Shotgun", "Flamethrower", "Tesla", "Sniper": return 30
+		"Splitter": return 10
+	return 10
+
 func attempt_build(grid_pos: Vector2i):
 	if grid.has(grid_pos):
 		print("Cell occupied!")
 		return
 
-	var new_building: Building = null
-	var cost = 10 # Хардкодим стоимость для MVP (можно брать из ModuleData потом)
+	var is_ore_vein = grid_pos in ore_veins
+
+	if current_selected_building == "Miner" and not is_ore_vein:
+		print("Miner must be placed on an Ore Vein!")
+		# TODO: Показать визуальную ошибку (всплывающий текст)
+		return
+	elif current_selected_building != "Miner" and is_ore_vein:
+		print("Cannot place this building on an Ore Vein!")
+		return
+
+	var cost = get_building_cost(current_selected_building)
 
 	if game_manager and game_manager.current_energy < cost:
 		print("Not enough energy!")
 		return
+
+	var new_building: Building = null
+
 	match current_selected_building:
 		"Miner":
 			new_building = Miner.new()
@@ -102,8 +144,19 @@ func attempt_build(grid_pos: Vector2i):
 			new_building = WeaponBuilding.new()
 			var w_data = WeaponData.new()
 			var lvl = SaveManager.get_module_level("Weapon") if SaveManager else 1
-			w_data.fire_rate = 2.0 * (1.0 + (lvl - 1) * 0.1) # +10% скорострельности за уровень
+			w_data.fire_rate = 2.0 * (1.0 + (lvl - 1) * 0.1)
 			w_data.range = 500.0
+			new_building.setup_weapon(w_data, grid_pos)
+			new_building.facing_direction = Vector2i.UP
+			new_building.on_fire.connect(_on_weapon_fire)
+		"Shotgun":
+			new_building = WeaponBuilding.new()
+			var w_data = WeaponData.new()
+			var lvl = SaveManager.get_module_level("Shotgun") if SaveManager else 1
+			w_data.fire_rate = 1.0
+			w_data.range = 250.0
+			w_data.firing_arc = 30.0
+			w_data.projectiles_per_shot = 3 + (lvl - 1)
 			new_building.setup_weapon(w_data, grid_pos)
 			new_building.facing_direction = Vector2i.UP
 			new_building.on_fire.connect(_on_weapon_fire)
@@ -138,17 +191,6 @@ func attempt_build(grid_pos: Vector2i):
 			new_building.setup_weapon(w_data, grid_pos)
 			new_building.facing_direction = Vector2i.UP
 			new_building.on_fire.connect(_on_weapon_fire)
-		"Shotgun":
-			new_building = WeaponBuilding.new()
-			var w_data = WeaponData.new()
-			var lvl = SaveManager.get_module_level("Shotgun") if SaveManager else 1
-			w_data.fire_rate = 1.0
-			w_data.range = 250.0
-			w_data.firing_arc = 30.0 # Сужаем конус до 30 градусов
-			w_data.projectiles_per_shot = 3 + (lvl - 1) # +1 пуля за каждый уровень
-			new_building.setup_weapon(w_data, grid_pos)
-			new_building.facing_direction = Vector2i.UP
-			new_building.on_fire.connect(_on_weapon_fire)
 		"Splitter":
 			new_building = SplitterBuilding.new()
 			var md = ModuleData.new()
@@ -164,7 +206,15 @@ func attempt_build(grid_pos: Vector2i):
 		place_module(grid_pos, new_building)
 
 func _draw():
-	# Отрисовываем сетку для прототипа (используем белый цвет, чтобы было видно на сером фоне)
+	# Отрисовываем рудные жилы (Ore Veins)
+	for vein in ore_veins:
+		var center = grid_to_world(vein)
+		# Рисуем пятно руды (коричнево-серое)
+		draw_circle(center, cell_size * 0.4, Color(0.4, 0.35, 0.3, 0.8))
+		draw_circle(center + Vector2(10, 10), cell_size * 0.2, Color(0.3, 0.25, 0.2, 0.8))
+		draw_circle(center + Vector2(-15, -5), cell_size * 0.15, Color(0.5, 0.45, 0.4, 0.8))
+
+	# Отрисовываем сетку
 	for x in range(grid_size.x + 1):
 		draw_line(Vector2(x * cell_size, 0), Vector2(x * cell_size, grid_size.y * cell_size), Color(1.0, 1.0, 1.0, 0.3), 3.0)
 	for y in range(grid_size.y + 1):
@@ -223,9 +273,21 @@ func remove_module(grid_pos: Vector2i):
 			return
 
 		# Восстанавливаем энергию
-		if module is Building and module.data and game_manager:
-			game_manager.current_energy += module.data.energy_cost
-			game_manager.energy_changed.emit(game_manager.current_energy, game_manager.max_energy)
+		if module is Building:
+			var cost = 10
+			if current_selected_building != "":
+				# Попытка получить цену здания, хотя мы уже не знаем тип при удалении точно без проверки класса,
+				# для прототипа сойдет. Но лучше сделать проверку.
+				if module is Miner: cost = get_building_cost("Miner")
+				elif module is ConveyorBuilding: cost = get_building_cost("Conveyor")
+				elif module is ProcessorBuilding: cost = get_building_cost("Processor")
+				elif module is ModifierBuilding: cost = get_building_cost("Modifier")
+				elif module is WeaponBuilding: cost = get_building_cost("Weapon")
+				elif module is SplitterBuilding: cost = get_building_cost("Splitter")
+
+			if game_manager:
+				game_manager.current_energy += cost
+				game_manager.energy_changed.emit(game_manager.current_energy, game_manager.max_energy)
 
 		grid.erase(grid_pos)
 		module.queue_free()
