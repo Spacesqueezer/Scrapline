@@ -49,7 +49,6 @@ func _process(delta):
 			enemies_to_spawn -= 1
 
 func spawn_enemy():
-	print("[WaveManager] spawn_enemy called. enemies_to_spawn: ", enemies_to_spawn, " is_boss_wave: ", game_manager and game_manager.current_wave > 0 and game_manager.current_wave % 5 == 0 and not _force_test_wave)
 	var grid_manager = get_node("/root/Main/World2D/GridManager")
 	var cell_size = 100
 	var grid_offset = Vector2.ZERO
@@ -64,16 +63,20 @@ func spawn_enemy():
 	# Проверка на спавн босса
 	var is_boss_wave = false
 	var diff_mult = 1.0
+	var dmg_mult = 1.0
 	if game_manager:
 		if game_manager.current_wave > 0 and game_manager.current_wave % 5 == 0 and not _force_test_wave:
 			is_boss_wave = true
 		diff_mult = 1.0 + (game_manager.current_wave * 0.5)
+		dmg_mult = 1.0 + (game_manager.current_wave * 0.2)
 
 	var enemy = null
 	if is_boss_wave:
 		enemy = BossEnemy.new()
 		add_child(enemy)
+		enemy.enemy_type_name = "Boss"
 		enemy.setup(Vector2(spawn_x, spawn_y), 500.0 * diff_mult, 20.0 + (game_manager.current_wave * 2.0), Vector2.DOWN)
+		enemy.attack_damage = 25.0 * dmg_mult
 	else:
 		if pool_manager:
 			enemy = pool_manager.get_enemy()
@@ -89,13 +92,19 @@ func spawn_enemy():
 
 		if e_type < 6:
 			# Basic Enemy
+			enemy.enemy_type_name = "Basic"
 			enemy.setup(Vector2(spawn_x, spawn_y), 50.0 * diff_mult, 60.0, Vector2.DOWN)
+			enemy.attack_damage = 5.0 * dmg_mult
 		elif e_type < 8:
 			# Swarm Enemy
+			enemy.enemy_type_name = "Swarm"
 			enemy.setup(Vector2(spawn_x, spawn_y), 20.0 * diff_mult, 120.0 + (game_manager.current_wave * 2.0), Vector2.DOWN)
+			enemy.attack_damage = 2.0 * dmg_mult
 		else:
 			# Armored Enemy
+			enemy.enemy_type_name = "Armored"
 			enemy.setup(Vector2(spawn_x, spawn_y), 150.0 * diff_mult, 30.0, Vector2.DOWN)
+			enemy.attack_damage = 15.0 * dmg_mult
 
 	if not enemy.on_death.is_connected(_on_enemy_death):
 		enemy.on_death.connect(_on_enemy_death)
@@ -108,22 +117,28 @@ func _on_enemy_death(enemy: Enemy):
 	active_enemies.erase(enemy)
 	enemies_alive -= 1
 	check_wave_end()
-	if not pool_manager:
+
+	if enemy is BossEnemy:
+		enemy.queue_free()
+	elif not pool_manager:
 		enemy.queue_free()
 
 func _on_enemy_reach_base(enemy: Enemy):
-	print("[WaveManager] _on_enemy_reach_base triggered! Base HP minus 10.")
-	print("[WaveManager] _on_enemy_reach_base triggered by enemy: ", enemy.enemy_type_name, ", at pos: ", enemy.global_position)
 	active_enemies.erase(enemy)
 	enemies_alive -= 1
 
 	# Наносим урон Ядру за пропущенного врага (штраф)
 	var grid_manager = get_node_or_null("/root/Main/World2D/GridManager")
 	if grid_manager and grid_manager.core_building:
-		grid_manager.core_building.take_damage(10)
+		# Штраф скалируется от волны
+		var penalty = 10.0 + (game_manager.current_wave if game_manager else 0) * 2.0
+		grid_manager.core_building.take_damage(penalty)
 
 	check_wave_end()
-	if not pool_manager:
+
+	if enemy is BossEnemy:
+		enemy.queue_free()
+	elif not pool_manager:
 		enemy.queue_free()
 
 func check_wave_end():

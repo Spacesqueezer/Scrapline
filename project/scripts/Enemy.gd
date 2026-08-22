@@ -1,12 +1,6 @@
 class_name Enemy
 extends Node2D
 
-var hp: float = 100.0
-var max_hp: float = 100.0
-var speed: float = 50.0
-var move_direction: Vector2 = Vector2.LEFT
-
-var is_active: bool = false
 signal on_death(enemy: Enemy)
 signal on_reach_base(enemy: Enemy)
 
@@ -25,10 +19,22 @@ func _draw():
 		var bar_height = 6.0
 		var offset_y = -35.0
 
-		# Фон (Красный)
+		# Фон
 		draw_rect(Rect2(-bar_width / 2.0, offset_y, bar_width, bar_height), Color.RED)
-		# Текущее HP (Зеленый)
+		# Здоровье
 		draw_rect(Rect2(-bar_width / 2.0, offset_y, bar_width * hp_ratio, bar_height), Color.GREEN)
+
+var hp: float = 50.0
+var max_hp: float = 50.0
+var speed: float = 50.0
+var is_active: bool = false
+var move_direction: Vector2 = Vector2.DOWN
+
+var attack_timer: float = 0.0
+var attack_rate: float = 1.0
+var attack_damage: float = 5.0
+var target_building: Building = null
+var attack_range: float = 80.0 # Дистанция атаки
 
 func setup(start_pos: Vector2, p_hp: float, p_speed: float, dir: Vector2):
 	global_position = start_pos
@@ -42,27 +48,16 @@ func setup(start_pos: Vector2, p_hp: float, p_speed: float, dir: Vector2):
 		if enemy_type_name == "Boss":
 			# Босс настраивается в своем классе
 			pass
-		elif max_hp > 100.0:
+		elif "Armored" in enemy_type_name:
 			sprite.texture = load("res://assets/enemy_armored.svg")
-			enemy_type_name = "Armored"
-		elif speed > 80.0:
+		elif "Swarm" in enemy_type_name:
 			sprite.texture = load("res://assets/enemy_swarm.svg")
-			enemy_type_name = "Swarm"
 		else:
 			sprite.texture = load("res://assets/enemy_basic.svg")
-			enemy_type_name = "Basic"
-
-	if StatTracker:
-		StatTracker.track_enemy_spawn(enemy_type_name)
 
 	show()
 	queue_redraw()
 
-var attack_timer: float = 0.0
-var attack_rate: float = 1.0
-var attack_damage: float = 10.0
-var target_building: Building = null
-var attack_range: float = 60.0 # Дистанция атаки
 
 func _process(delta):
 	if not is_active:
@@ -73,6 +68,7 @@ func _process(delta):
 	# Поиск ближайшей живой цели, если текущей нет или она уничтожена
 	if target_building == null or target_building.is_destroyed:
 		target_building = _find_closest_building(grid_manager)
+		attack_timer = 0.0 # Сбрасываем таймер атаки при смене цели
 
 	# Если цель есть, проверяем дистанцию
 	if target_building and not target_building.is_destroyed:
@@ -82,7 +78,10 @@ func _process(delta):
 			attack_timer += delta
 			if attack_timer >= attack_rate:
 				attack_timer = 0.0
-				target_building.take_damage(attack_damage)
+				if target_building is CoreBuilding:
+					target_building.take_damage(attack_damage * 2.0)
+				else:
+					target_building.take_damage(attack_damage)
 				# Небольшая визуальная обратная связь атаки врага
 				var attack_dir = (target_building.global_position - global_position).normalized()
 				global_position += attack_dir * 5
@@ -97,10 +96,14 @@ func _process(delta):
 			if sprite:
 				sprite.rotation = move_direction.angle() - PI/2 # минус 90 градусов, т.к. изначально смотрит вниз
 	else:
-		# Если вообще нет зданий на карте (маловероятно), просто идем вниз
-		move_direction = Vector2.DOWN
+		# Если вообще нет зданий на карте, идем к ядру
+		if grid_manager and grid_manager.core_building and not grid_manager.core_building.is_destroyed:
+			move_direction = (grid_manager.core_building.global_position - global_position).normalized()
+		else:
+			move_direction = Vector2.DOWN
+
 		if sprite:
-			sprite.rotation = 0
+			sprite.rotation = move_direction.angle() - PI/2
 
 	# Применяем движение
 	global_position += move_direction * speed * delta

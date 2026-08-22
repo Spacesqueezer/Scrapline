@@ -19,7 +19,8 @@ func setup_weapon(w_data: WeaponData, p_grid_pos: Vector2i):
 
 	# Если это дробовик, меняем текстуру
 	if w_data and w_data.firing_arc < 360.0:
-		base_texture_path = "res://assets/shotgun.svg"
+		if not self is FlamethrowerBuilding:
+			base_texture_path = "res://assets/shotgun.svg"
 		if sprite:
 			sprite.texture = load(base_texture_path)
 
